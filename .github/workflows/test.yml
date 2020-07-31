@@ -1,0 +1,80 @@
+name: test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    name: Run specs on ${{ matrix.os }} ruby ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        ruby: ['2.6', '2.5', '2.4']
+        experimental: [false]
+        include:
+          - ruby: '2.7'
+            os: ubuntu-latest
+            experimental: true
+          - ruby: '2.7'
+            os: macos-latest
+            experimental: true
+          - ruby: '2.7'
+            os: windows-latest
+            experimental: true
+
+    steps:
+      - name: Use Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - uses: actions/checkout@master
+
+      - name: Install gems
+        run: |
+          gem install bundler -v "~> 2"
+          bundle install --jobs 4 --retry 5
+
+      - name: Install LaTeXML on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo snap install latexml --edge
+          echo "::add-path::/snap/bin"
+
+      - name: Run RSpecs
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          bundle exec rspec
+
+      - name: Install LaTeXML on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install libxml2 cpanminus
+          env PATH=$(brew --prefix libxml2)/bin:$PATH \
+            cpanm --notest XML::LibXSLT@1.96 git://github.com/brucemiller/LaTeXML.git@9a0e7dc5
+
+      - name: Run RSpecs
+        if: matrix.os == 'macos-latest'
+        run: |
+          env PATH=$(brew --prefix perl)/bin:$PATH bundle exec rake
+
+      - name: Install LaTeXML on Windows
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          cinst -y latexml
+          refreshenv
+          set PATH=C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;%PATH%
+          where latexmlmath
+
+      - name: Run specs
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $env:Path = "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path"
+          bundle exec rake
