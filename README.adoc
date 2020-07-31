@@ -9,8 +9,9 @@ image:https://img.shields.io/github/commits-since/metanorma/latexmath/latest.svg
 == Purpose
 
 Ruby gem to translate LaTeX math into MathML.
+The MathML is supposed to be compliant with output of LaTeXML.
 
-Also works in reverse by translating MathML into LaTeX code.
+It also works in reverse by translating MathML into LaTeX code.
 
 The LaTeX math syntax supports `amsmath`, `array`, `split` and `pmatrix` packages.
 
