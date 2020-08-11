@@ -1,4 +1,4 @@
-require_relative "./requirement"
+require_relative './requirement'
 require 'open3'
 
 module Latexmath
@@ -7,11 +7,11 @@ module Latexmath
     @minimal_version = '0.8.0'
 
     def initialize
-      version_output, = Open3.capture2e("latexml --VERSION")
-      version = version_output&.match(%r{\d+(.\d+)*})
+      version_output, = Open3.capture2e('latexml --VERSION')
+      version = version_output&.match(/\d+(.\d+)*/)
       puts version_output
       if version.to_s.empty?
-        @error_message = "LaTeXML is not available. (Or is PATH not setup properly?)"\
+        @error_message = 'LaTeXML is not available. (Or is PATH not setup properly?)'\
           " You must upgrade/install LaTeXML to a version higher than `#{@recommended_version}`"
 
       elsif Gem::Version.new(version) < Gem::Version.new(@minimal_version)
@@ -19,12 +19,12 @@ module Latexmath
             "Version `#{version}` found; recommended version is `#{@recommended_version}`"
 
       elsif Gem::Version.new(version) < Gem::Version.new(@recommended_version)
-        version = "unknown" if version.to_s.empty?
+        version = 'unknown' if version.to_s.empty?
         header_msg = "latexmlmath version `#{version}` below `#{@recommended_version}`!"
         suggestion = if Gem.win_platform?
-                       "cmd encoding is set to UTF-8 with `chcp 65001`"
+                       'cmd encoding is set to UTF-8 with `chcp 65001`'
                      else
-                       "terminal encoding is set to UTF-8 with `export LANG=en_US.UTF-8`"
+                       'terminal encoding is set to UTF-8 with `export LANG=en_US.UTF-8`'
                      end
 
         @error_message = "WARNING #{header_msg} Please sure that #{suggestion} command."
@@ -35,8 +35,8 @@ module Latexmath
         @cmd = 'latexmlmath --strict --preload=amsmath --inputencoding=UTF-8 -- -'
         @cmd2 = 'latexmlmath --strict --inputencoding=UTF-8 -- -'
       end
-    rescue
-      @error_message = "LaTeXML is not available. (Or is PATH not setup properly?)"\
+    rescue StandardError
+      @error_message = 'LaTeXML is not available. (Or is PATH not setup properly?)'\
           " You must upgrade/install LaTeXML to a version higher than `#{@recommended_version}`"
     end
 
@@ -60,7 +60,7 @@ module Latexmath
 
     def run(input, command)
       puts command
-      IO.popen(command, "r+", external_encoding: "UTF-8") do |io|
+      IO.popen(command, 'r+', external_encoding: 'UTF-8') do |io|
         io.write(input)
         io.close_write
         io.read
@@ -73,12 +73,11 @@ module Latexmath
         warn "Retrying with #{cmd}" if i > 0
         results = run(input, cmd)
         if $CHILD_STATUS.to_i.zero?
-          warn "Success!" if i > 0
+          warn 'Success!' if i > 0
           break
         end
       end
       $CHILD_STATUS.to_i.zero? ? results : nil
     end
-
   end
 end

@@ -1,0 +1,132 @@
+Layout/EndAlignment:
+  Exclude:
+    - 'lib/latexmath/converter.rb'
+    - 'lib/latexmath/tokenizer.rb'
+
+# Offense count: 1
+# Configuration parameters: AllowSafeAssignment.
+Lint/AssignmentInCondition:
+  Exclude:
+    - 'lib/latexmath/tokenizer.rb'
+
+# Offense count: 2
+Lint/ImplicitStringConcatenation:
+  Exclude:
+    - 'spec/tokenizer_spec.rb'
+
+# Offense count: 1
+# Configuration parameters: AllowKeywordBlockArguments.
+Lint/UnderscorePrefixedVariableName:
+  Exclude:
+    - 'lib/latexmath/converter.rb'
+
+# Offense count: 2
+Lint/UselessAssignment:
+  Exclude:
+    - 'lib/latexmath/converter.rb'
+
+# Offense count: 7
+# Configuration parameters: IgnoredMethods.
+Metrics/AbcSize:
+  Max: 32
+
+# Offense count: 1
+# Configuration parameters: CountComments, CountAsOne, ExcludedMethods.
+# ExcludedMethods: refine
+Metrics/BlockLength:
+  Max: 35
+
+# Offense count: 1
+# Configuration parameters: CountBlocks.
+Metrics/BlockNesting:
+  Max: 4
+
+# Offense count: 1
+# Configuration parameters: CountComments, CountAsOne.
+Metrics/ClassLength:
+  Max: 157
+
+# Offense count: 6
+# Configuration parameters: IgnoredMethods.
+Metrics/CyclomaticComplexity:
+  Max: 13
+
+# Offense count: 9
+# Configuration parameters: CountComments, CountAsOne, ExcludedMethods.
+Metrics/MethodLength:
+  Max: 39
+
+# Offense count: 6
+# Configuration parameters: IgnoredMethods.
+Metrics/PerceivedComplexity:
+  Max: 14
+
+# Offense count: 1
+Naming/ConstantName:
+  Exclude:
+    - 'lib/latexmath.rb'
+
+# Offense count: 2
+# Cop supports --auto-correct.
+# Configuration parameters: AutoCorrect, EnforcedStyle.
+# SupportedStyles: nested, compact
+Style/ClassAndModuleChildren:
+  Exclude:
+    - 'lib/latexmath/xml/builder.rb'
+    - 'lib/latexmath/xml/element.rb'
+
+# Offense count: 7
+Style/Documentation:
+  Exclude:
+    - 'spec/**/*'
+    - 'test/**/*'
+    - 'lib/latexmath.rb'
+    - 'lib/latexmath/aggregator.rb'
+    - 'lib/latexmath/converter.rb'
+    - 'lib/latexmath/equation.rb'
+    - 'lib/latexmath/latexml_requirement.rb'
+    - 'lib/latexmath/requirement.rb'
+    - 'lib/latexmath/tokenizer.rb'
+
+# Offense count: 18
+# Cop supports --auto-correct.
+# Configuration parameters: EnforcedStyle.
+# SupportedStyles: always, always_true, never
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# Offense count: 2
+# Configuration parameters: MinBodyLength.
+Style/GuardClause:
+  Exclude:
+    - 'lib/latexmath/aggregator.rb'
+
+# Offense count: 5
+Style/IdenticalConditionalBranches:
+  Exclude:
+    - 'lib/latexmath/converter.rb'
+
+# Offense count: 1
+# Cop supports --auto-correct.
+Style/LineEndConcatenation:
+  Exclude:
+    - 'spec/tokenizer_spec.rb'
+
+# Offense count: 5
+# Cop supports --auto-correct.
+# Configuration parameters: AutoCorrect, EnforcedStyle, IgnoredMethods.
+# SupportedStyles: predicate, comparison
+Style/NumericPredicate:
+  Exclude:
+    - 'spec/**/*'
+    - 'lib/latexmath/aggregator.rb'
+    - 'lib/latexmath/converter.rb'
+    - 'lib/latexmath/latexml_requirement.rb'
+
+# Offense count: 2
+# Cop supports --auto-correct.
+Style/ZeroLengthPredicate:
+  Exclude:
+    - 'lib/latexmath/converter.rb'
+
+

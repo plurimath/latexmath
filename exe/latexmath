@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require_relative '../lib/latexmath'
+
+latex = File.read(ARGV[0])
+
+tokens = Latexmath::Tokenizer.new(latex).tokenize
+aggr = Latexmath::Aggregator.new(tokens).aggregate
+puts Latexmath::Converter.new(aggr).convert
