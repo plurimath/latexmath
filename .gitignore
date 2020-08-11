@@ -9,3 +9,11 @@
 
 # rspec failure tracking
 .rspec_status
+
+# ignore byebug history
+.byebug_history
+
+# ignore MacOS system file
+.DS_Store
+
+*.tex.html

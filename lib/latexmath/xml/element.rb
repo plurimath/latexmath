@@ -1,0 +1,21 @@
+module Latexmath::XML
+  class Element
+    attr_accessor :element
+    def initialize(parent, tag, attributes = {})
+      @element = Ox::Element.new(tag)
+      attributes.each do |key, value|
+        @element[key] = value
+      end
+      @parent = parent.is_a?(Latexmath::XML::Element) ? parent.element : parent
+      @parent << @element
+    end
+
+    def text=(value)
+      @element << Ox::Raw.new(value)
+    end
+
+    def set_attribute(key, value)
+      @element[key] = value
+    end
+  end
+end
