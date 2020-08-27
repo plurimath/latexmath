@@ -21,9 +21,9 @@ module Latexmath
 
     def classify(element, parent, is_math_mode = false)
       symbol = Latexmath::Symbol.get(element)
-      puts Ox.dump(@doc) if element.nil?
       if element == '\\displaystyle'
-
+      elsif element.nil?
+        Latexmath::XML::Element.new(parent, 'mi')
       elsif element.match?(/\d+(.\d+)?/)
         el = Latexmath::XML::Element.new(parent, 'mn')
         el.text = element
@@ -127,7 +127,6 @@ module Latexmath
 
         while i = iterable.next
           element = row[i]
-          element = '' if element.nil?
           if element == '\\hline' && row_count > 1
             row_lines << 'solid'
             has_row_line = true
