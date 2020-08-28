@@ -1419,15 +1419,12 @@ RSpec.describe Latexmath do
     it (param[0]).to_s do
       tokens = Latexmath::Tokenizer.new(param[1]).tokenize
       aggr = Latexmath::Aggregator.new(tokens).aggregate
-      expect(Latexmath::Converter.new(aggr).convert).to eq(
-        Ox.dump(
-          Ox.parse("
-            <math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"inline\">
-              <mrow>#{param[2]}</mrow>
-            </math>
-          ")
-        )
-      )
+      xml = <<~EOQ
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="inline">
+          <mrow>#{param[2]}</mrow>
+        </math>
+      EOQ
+      expect(Latexmath::Converter.new(aggr).convert).to be_equivalent_to(xml)
     end
   end
 

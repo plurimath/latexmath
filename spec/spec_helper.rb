@@ -1,4 +1,6 @@
 require 'bundler/setup'
+require 'rspec/matchers'
+require 'equivalent-xml'
 require 'latexmath'
 
 RSpec.configure do |config|
