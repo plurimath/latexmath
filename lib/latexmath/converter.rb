@@ -2,8 +2,6 @@ module Latexmath
   class Converter
     def initialize(aggregate)
       @aggregate = aggregate
-      puts @aggregate.to_json
-      # puts @aggregate.to_yaml
     end
 
     def convert(xmlns = 'http://www.w3.org/1998/Math/MathML', display = 'inline')
