@@ -55,7 +55,7 @@ module Latexmath
         el.text = if symbol
                     "&#x#{symbol};"
                   elsif ['\\log', '\\ln', '\\tan', '\\sec', '\\cos', '\\sin', '\\cot', '\\csc'].include?(element)
-                    element[1..]
+                    element[1..element.size]
                   else
                     element
                   end
@@ -172,7 +172,7 @@ module Latexmath
 
       if (elements.size - 1) < params
         mo = Latexmath::XML::Element.new(parent, 'mo')
-        mo.text = element[1..]
+        mo.text = element[1..element.size]
         return
       end
 
@@ -187,7 +187,7 @@ module Latexmath
 
       if LIMITS.include?(element)
         limit = Latexmath::XML::Element.new(new_parent, 'mo')
-        limit.text = element[1..]
+        limit.text = element[1..element.size]
       end
 
       Range.new(0, (params - 1)).each do |_j|
