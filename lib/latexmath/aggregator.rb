@@ -108,7 +108,7 @@ module Latexmath
       env = if token.start_with?(LATEX_BEGIN)
               token[7..-2]
             else
-              token[1..]
+              token[1..token.size]
       end
 
       alignment = nil
@@ -226,7 +226,7 @@ module Latexmath
 
         content = g[2..right - 1]
         g_ = g
-        g_ = g[0..1] + [aggregate(content)] + g[right..] if content.any?
+        g_ = g[0..1] + [aggregate(content)] + g[right..g.size] if content.any?
 
         return g_
       end
@@ -303,7 +303,7 @@ module Latexmath
         if previous.is_a?(String) && OPERATORS.include?(previous)
           if (previous == CLOSING_PARENTHESIS) && aggregated.include?(OPENING_PARENTHESIS)
             index = find_opening_parenthesis(aggregated)
-            aggregated = aggregated[0, index] + [token] + [aggregated[index..] + [previous]]
+            aggregated = aggregated[0, index] + [token] + [aggregated[index..aggregated.size] + [previous]]
           else
             aggregated += [previous, token]
           end
