@@ -35,70 +35,72 @@ module Latexmath
       aggregated = []
 
       loop do
-        token = next_item_or_group(tokens)
-        raise StopIteration if token.nil?
+        begin
+          token = next_item_or_group(tokens)
+          raise StopIteration if token.nil?
 
-        if token.is_a?(Array)
-          aggregated << token
-        elsif token == OPENING_BRACKET
-          previous = nil
-          previous = aggregated[-1] if aggregated.any?
-          begin
-            g = group(tokens, opening: OPENING_BRACKET, closing: CLOSING_BRACKET)
-            if previous == LATEX_SQRT
-              root = tokens.shift
-              raise StopIteration if root.nil?
+          if token.is_a?(Array)
+            aggregated << token
+          elsif token == OPENING_BRACKET
+            previous = nil
+            previous = aggregated[-1] if aggregated.any?
+            begin
+              g = group(tokens, opening: OPENING_BRACKET, closing: CLOSING_BRACKET)
+              if previous == LATEX_SQRT
+                root = tokens.shift
+                raise StopIteration if root.nil?
 
-              if root == OPENING_BRACES
-                begin
-                  root = group(tokens)
-                rescue EmptyGroupError
-                  root = ''
+                if root == OPENING_BRACES
+                  begin
+                    root = group(tokens)
+                  rescue EmptyGroupError
+                    root = ''
+                  end
                 end
+                aggregated[-1] = LATEX_ROOT
+                aggregated << root
               end
-              aggregated[-1] = LATEX_ROOT
-              aggregated << root
+              aggregated << g
+            rescue EmptyGroupError
+              next if previous == LATEX_SQRT
+
+              aggregated += [OPENING_BRACKET, CLOSING_BRACKET]
             end
-            aggregated << g
-          rescue EmptyGroupError
-            next if previous == LATEX_SQRT
+          elsif LIMITS.include?(token)
+            raise StopIteration if tokens.shift.nil?
 
-            aggregated += [OPENING_BRACKET, CLOSING_BRACKET]
+            a = next_item_or_group(tokens)
+            aggregated += [token, a]
+          elsif token == '\\limits'
+            previous = aggregated.pop
+            raise StopIteration if tokens.shift.nil?
+
+            a = next_item_or_group(tokens)
+            raise StopIteration if tokens.shift.nil?
+
+            b = next_item_or_group(tokens)
+            aggregated += [token, previous, a, b]
+          elsif token && SUB_SUP.include?(token)
+            aggregated = process_sub_sup(aggregated, token, tokens)
+          elsif token.start_with?(LATEX_BEGIN) || MATRICES.include?(token)
+            aggregated += environment(token, tokens)
+          elsif token == LATEX_OVER
+            numerator = aggregated
+            aggregated = []
+            aggregated << LATEX_FRAC
+            aggregated << numerator
+            denominator = next_item_or_group(tokens)
+            aggregated << [denominator]
+          else
+            aggregated << token
           end
-        elsif LIMITS.include?(token)
-          raise StopIteration if tokens.shift.nil?
-
-          a = next_item_or_group(tokens)
-          aggregated += [token, a]
-        elsif token == '\\limits'
-          previous = aggregated.pop
-          raise StopIteration if tokens.shift.nil?
-
-          a = next_item_or_group(tokens)
-          raise StopIteration if tokens.shift.nil?
-
-          b = next_item_or_group(tokens)
-          aggregated += [token, previous, a, b]
-        elsif token && SUB_SUP.include?(token)
-          aggregated = process_sub_sup(aggregated, token, tokens)
-        elsif token.start_with?(LATEX_BEGIN) || MATRICES.include?(token)
-          aggregated += environment(token, tokens)
-        elsif token == LATEX_OVER
-          numerator = aggregated
-          aggregated = []
-          aggregated << LATEX_FRAC
-          aggregated << numerator
-          denominator = next_item_or_group(tokens)
-          aggregated << [denominator]
-        else
-          aggregated << token
+        rescue EmptyGroupError
+          aggregated += [OPENING_BRACES, CLOSING_BRACES]
+          next
+        rescue StopIteration
+          aggregated << token unless token.nil?
+          break
         end
-      rescue EmptyGroupError
-        aggregated += [OPENING_BRACES, CLOSING_BRACES]
-        next
-      rescue StopIteration
-        aggregated << token unless token.nil?
-        break
       end
 
       aggregated
@@ -117,56 +119,58 @@ module Latexmath
       has_rowline = false
 
       loop do
-        token = next_item_or_group(tokens)
-        raise StopIteration if token.nil?
+        begin
+          token = next_item_or_group(tokens)
+          raise StopIteration if token.nil?
 
-        if token.is_a? Array
-          begin
-            if env == 'array' && token.all? { |x| 'lcr|'.include?(x) }
-              alignment = token
-            else
-              row << process_row(token)
+          if token.is_a? Array
+            begin
+              if env == 'array' && token.all? { |x| 'lcr|'.include?(x) }
+                alignment = token
+              else
+                row << process_row(token)
+              end
+            rescue TypeError
+              row << token
             end
-          rescue TypeError
+          elsif token == "\\end{#{env}}"
+            break
+          elsif token == AMPERSAND
+            row << token
+          elsif token == BACKSLASH
+            row = group_columns(row) if row.include?(AMPERSAND)
+            row.insert(0, LATEX_HLINE) if has_rowline
+            content << row
+            row = []
+            has_rowline = false
+          elsif token == LATEX_HLINE
+            has_rowline = true
+          elsif token == OPENING_BRACKET && content.empty?
+            begin
+              alignment = group(tokens, opening: OPENING_BRACKET, closing: CLOSING_BRACKET)
+            rescue EmptyGroupError
+              next
+            end
+          elsif token == DASH
+            next_token = tokens.shift
+            raise StopIteration if next_token.nil?
+
+            row << if next_token == "\\end{#{env}}"
+                    token
+                  else
+                    [token, next_token]
+                  end
+          elsif SUB_SUP.include?(token)
+            row = process_sub_sup(row, token, tokens)
+          else
             row << token
           end
-        elsif token == "\\end{#{env}}"
+        rescue EmptyGroupError
+          row << []
+          next
+        rescue StopIteration
           break
-        elsif token == AMPERSAND
-          row << token
-        elsif token == BACKSLASH
-          row = group_columns(row) if row.include?(AMPERSAND)
-          row.insert(0, LATEX_HLINE) if has_rowline
-          content << row
-          row = []
-          has_rowline = false
-        elsif token == LATEX_HLINE
-          has_rowline = true
-        elsif token == OPENING_BRACKET && content.empty?
-          begin
-            alignment = group(tokens, opening: OPENING_BRACKET, closing: CLOSING_BRACKET)
-          rescue EmptyGroupError
-            next
-          end
-        elsif token == DASH
-          next_token = tokens.shift
-          raise StopIteration if next_token.nil?
-
-          row << if next_token == "\\end{#{env}}"
-                   token
-                 else
-                   [token, next_token]
-                 end
-        elsif SUB_SUP.include?(token)
-          row = process_sub_sup(row, token, tokens)
-        else
-          row << token
         end
-      rescue EmptyGroupError
-        row << []
-        next
-      rescue StopIteration
-        break
       end
 
       if row.any?
@@ -191,33 +195,35 @@ module Latexmath
       end
 
       loop do
-        token = tokens.shift
-        raise StopIteration if token.nil?
+        begin
+          token = tokens.shift
+          raise StopIteration if token.nil?
 
-        if token == closing && delimiter.nil?
-          break if g.any?
+          if token == closing && delimiter.nil?
+            break if g.any?
 
-          raise EmptyGroupError
-        elsif token == opening
-          begin
-            g << group(tokens)
-          rescue EmptyGroupError
-            g += [[]]
+            raise EmptyGroupError
+          elsif token == opening
+            begin
+              g << group(tokens)
+            rescue EmptyGroupError
+              g += [[]]
+            end
+          elsif token == LATEX_LEFT
+            g << group(tokens, delimiter: token)
+          elsif token == LATEX_RIGHT
+            g << token
+            _token = tokens.shift
+            raise StopIteration if _token.nil?
+
+            g << _token
+            break
+          else
+            g << token
           end
-        elsif token == LATEX_LEFT
-          g << group(tokens, delimiter: token)
-        elsif token == LATEX_RIGHT
-          g << token
-          _token = tokens.shift
-          raise StopIteration if _token.nil?
-
-          g << _token
+        rescue StopIteration
           break
-        else
-          g << token
         end
-      rescue StopIteration
-        break
       end
 
       if delimiter
