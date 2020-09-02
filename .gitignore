@@ -17,3 +17,5 @@
 .DS_Store
 
 *.tex.html
+
+/dist/

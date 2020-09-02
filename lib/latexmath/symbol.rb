@@ -8,7 +8,13 @@ module Latexmath
     end
 
     def symbols
-      @symbols ||= read_symbols
+      if RUBY_ENGINE == 'opal'
+        require 'unimathsymbols'
+        require 'native'
+        @symbols ||= Native::Object.new(`globalThis.unimathsymbols`)
+      else
+        @symbols ||= read_symbols
+      end
     end
 
     private
