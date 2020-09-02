@@ -15,13 +15,11 @@ RSpec.configure do |config|
 end
 
 if ENV['TEST_OPAL'] == '1'
-  require 'mini_racer'
+  require 'execjs'
 
   puts "* Executing specs for Opal"
 
-  $context = MiniRacer::Context.new
-  $context.eval File.read "dist/latexmath.js"
-  $context.attach 'console.log', proc { |arg| puts arg }
+  $context = ExecJS.compile File.read "dist/latexmath.js"
 
   # A shim Latexmath module that actually executes the JS file.
   module Latexmath
