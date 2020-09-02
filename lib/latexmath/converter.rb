@@ -69,7 +69,7 @@ module Latexmath
     def classify_subgroup(elements, row, is_math_mode = false)
       return if elements.size == 0
 
-      iterable = Range.new(0, (elements.size - 1)).each
+      iterable = Range.new(0, (elements.size - 1)).each_compat
       while i = iterable.next
         element = elements[i]
         if element.is_a?(Array)
@@ -122,7 +122,7 @@ module Latexmath
 
         row_count += 1
         mtr = Latexmath::XML::Element.new(parent, 'mtr')
-        iterable = Range.new(0, row.size - 1).each
+        iterable = Range.new(0, row.size - 1).each_compat
 
         index = 0
         has_row_line = false
@@ -252,7 +252,7 @@ module Latexmath
 
     def convert_matrix_row(row, parent, alignment, single_mtd)
       mtr = Latexmath::XML::Element.new(parent, 'mtr')
-      iterable = Range.new(0, row.size - 1).each
+      iterable = Range.new(0, row.size - 1).each_compat
       mtd = Latexmath::XML::Element.new(mtr, 'mtd') if single_mtd
 
       while i = iterable.next

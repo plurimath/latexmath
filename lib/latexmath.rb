@@ -1,9 +1,10 @@
-require 'byebug'
+require 'byebug' unless RUBY_ENGINE == 'opal'
 require 'json'
 require 'htmlentities'
 require 'ox'
+require_relative 'latexmath/ext'
 require_relative 'latexmath/version'
-require_relative 'latexmath/latexml_requirement'
+#require_relative 'latexmath/latexml_requirement'
 require_relative 'latexmath/aggregator'
 require_relative 'latexmath/converter'
 require_relative 'latexmath/symbol'
@@ -71,7 +72,7 @@ module Latexmath
   end
 
   Requirements = {
-    latexml: LatexmlRequirement.new
+    #latexml: LatexmlRequirement.new
   }.freeze
 
   def self.parse(string)
