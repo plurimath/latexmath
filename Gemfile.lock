@@ -14,12 +14,10 @@ GEM
     diff-lcs (1.4.4)
     equivalent-xml (0.6.0)
       nokogiri (>= 1.4.3)
+    execjs (2.7.0)
     htmlentities (4.3.4)
-    libv8 (8.4.255.0)
     method_source (1.0.0)
     mini_portile2 (2.4.0)
-    mini_racer (0.3.1)
-      libv8 (~> 8.4.255)
     nokogiri (1.10.10)
       mini_portile2 (~> 2.4.0)
     opal (1.0.3)
@@ -69,8 +67,8 @@ PLATFORMS
 DEPENDENCIES
   byebug
   equivalent-xml
+  execjs
   latexmath!
-  mini_racer
   opal
   pry
   rake (~> 12.0)

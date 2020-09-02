@@ -15,8 +15,12 @@ task 'build-opal' do
   b.append_paths __dir__+'/opal'
   b.use_gem 'htmlentities'
 
+  build = b.build('latexmath-opal').to_s
+  # This is a hack intended for ExecJS to work properly.
+  build = build.gsub('Object freezing is not supported by Opal', '')
+
   FileUtils.mkdir_p 'dist'
-  File.write('dist/latexmath.js', b.build('latexmath-opal').to_s)
+  File.write('dist/latexmath.js', build)
 end
 
 task 'spec-opal' => 'build-opal' do
@@ -25,4 +29,4 @@ task 'spec-opal' => 'build-opal' do
   ENV.delete 'TEST_OPAL'
 end
 
-task default: :spec
+task default: [:spec, "spec-opal"]
