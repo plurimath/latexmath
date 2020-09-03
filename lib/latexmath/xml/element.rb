@@ -10,6 +10,10 @@ module Latexmath::XML
       @parent << @element
     end
 
+    def tag=(tag)
+      @element.value = tag
+    end
+
     def text=(value)
       @element << Ox::Raw.new(value)
     end

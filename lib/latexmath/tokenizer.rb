@@ -14,6 +14,7 @@ module Latexmath
 
     def fetch_token
       skip(/\s+/)
+      skip(/\$\$/)
 
       token = if scan(/\\mathbb\{[^}]+}/)
                 if Latexmath::Symbol.get(matched)
@@ -21,12 +22,25 @@ module Latexmath
                 else
                   matched
                 end
+              elsif scan(/{\\bf [^}]+}/)
+                matches = matched.match(/{\\bf ([^}]+)}/)
+                symbol = "\\mathbf{#{matches[1]}}"
+                if Latexmath::Symbol.get(symbol)
+                  "&#x#{Latexmath::Symbol.get(symbol)};"
+                end
               elsif scan(/\\\\\[\d+mm\]/)
                 '\\\\' # matched
               elsif scan(/\\mbox{[^\}]+}/)
                 matched
+              elsif scan(/\\vec{[^\}]+}/)
+                matched
+              elsif scan(/\\hat{[^\}]+}/)
+                matched
               elsif scan(/\\textrm{[^\}]+}/)
                 matched
+              elsif scan(/{\\rm [^}]+}/)
+                matches = matched.match(/{\\rm ([^}]+)}/)
+                matches[1]
               elsif scan(/\\[a-z]+\{(bmatrix|Bmatrix|matrix|vmatrix|Vmatrix|array|pmatrix|split)\*?\}/)
                 matched
               elsif scan(/\\[a-z]+/)
@@ -40,6 +54,8 @@ module Latexmath
               elsif scan(/\\\{/)
                 matched
               elsif scan(/\\,/)
+                matched
+              elsif scan(/\\:/)
                 matched
               elsif scan(/\\/)
                 matched

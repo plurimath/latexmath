@@ -29,6 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'htmlentities', '~> 4.3'
   spec.add_dependency 'ox', '~> 2.13'
   spec.add_development_dependency 'equivalent-xml'
-  spec.add_development_dependency 'opal'
   spec.add_development_dependency 'execjs'
+  spec.add_development_dependency 'opal'
 end
