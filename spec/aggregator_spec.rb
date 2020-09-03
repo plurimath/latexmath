@@ -341,13 +341,98 @@ PARAMS = [
     '(1+(x-y)^{2})',
     ['(', '1', '+', '^', ['(', 'x', '-', 'y', ')'], ['2'], ')']
   ],
-  ['issue #98', 'p_{\\max}', ['_', 'p', ['\\max']]]
+  ['issue #98', 'p_{\\max}', ['_', 'p', ['\\max']]],
+  [
+    'array #5',
+    '\\begin{array}{cc}
+    \\left(    \\begin{array}{ccccccc}
+            & & & & & & \\\\
+            & +k & & & & -k  \\\\
+            & & & & & & \\\\
+            & & & & & & \\\\
+            & & & & & & \\\\
+            & -k & & & & +k
+        \\end{array}  \\right)   &
+             \\begin{array}{cc}
+                      & \\\\
+                      \\cdots & \\mbox{degree of freedom 1, node 1} \\\\
+                      & \\\\
+                      & \\\\
+                      & \\\\
+                      \\cdots & \\mbox{degree of freedom 2, node 2}
+             \\end{array}      \\\\
+                         & \\\\
+            \\begin{array}{cccccc}
+               \\vdots & & & & & \\vdots
+         \\end{array}  & \\\\
+         \\begin{array}{cccc}
+    & \\mbox{degree of}  & \\mbox{degree of}  & \\\\
+    & \\mbox{freedom 1,} & \\mbox{freedom 2,} & \\\\
+    & \\mbox{node 1} & \\mbox{node 2}  &
+        \\end{array}    &
+    \\end{array}',
+    ["\\array","cc",
+      [
+        [
+          [
+            "\\left","(",
+            ["\\array","ccccccc",
+              [
+                [nil,nil,nil,nil,nil,nil,nil],
+                [nil,["+","k"],nil,nil,nil,["-","k"]],
+                [nil,nil,nil,nil,nil,nil,nil],
+                [nil,nil,nil,nil,nil,nil,nil],
+                [nil,nil,nil,nil,nil,nil,nil],
+                [nil,["-","k"],nil,nil,nil,["+","k"]]]
+            ],
+            "\\right",")"
+          ],
+          ["\\array","cc",
+            [
+              [nil,nil],
+              ["\\cdots","\\mbox{degree of freedom 1, node 1}"],
+              [nil,nil],
+              [nil,nil],
+              [nil,nil],
+              ["\\cdots","\\mbox{degree of freedom 2, node 2}"]
+            ]]
+        ],
+        [nil,nil],
+        [
+          ["\\array","cccccc",
+            ["\\vdots",nil,nil,nil,nil,"\\vdots"]
+          ],
+          nil
+        ],
+        [
+          ["\\array","cccc",
+            [
+              [nil,"\\mbox{degree of}","\\mbox{degree of}",nil],
+              [nil,"\\mbox{freedom 1,}","\\mbox{freedom 2,}",nil],
+              [nil,"\\mbox{node 1}","\\mbox{node 2}",nil]
+            ]
+          ],
+          nil
+        ]
+      ]
+    ]
+  ],
+  [
+    'split #1',
+    '\begin{split}
+    C_L &= {L \over {1\over2} \rho_\textrm{ref} q_\textrm{ref}^2 S} \\ \\
+    C_D &= {D \over {1\over2} \rho_\textrm{ref} q_\textrm{ref}^2 S} \\ \\
+    \vec{C}_M &= {\vec{M} \over {1\over2} \rho_\textrm{ref} q_\textrm{ref}^2 c_\textrm{ref} S_\textrm{ref}},
+    \end{split}',
+    ["\\split",[["_","C","L"],["=",["\\frac",["L"],[["\\frac",["1"],["2"]],"_","\\rho","\\textrm{ref}","_^","q","\\textrm{ref}","2","S"]],"\\","\\","_","C","D"],["=",["\\frac",["D"],[["\\frac",["1"],["2"]],"_","\\rho","\\textrm{ref}","_^","q","\\textrm{ref}","2","S"]],"\\","\\","_","\\vec{C}","M"],["=",["\\frac",["\\vec{M}"],[["\\frac",["1"],["2"]],"_","\\rho","\\textrm{ref}","_^","q","\\textrm{ref}","2","_","c","\\textrm{ref}","_","S","\\textrm{ref}"]],","]]]
+  ]
 ].freeze
 
 RSpec.describe Latexmath do
   PARAMS.each do |param|
     it (param[0]).to_s do
       tokens = Latexmath::Tokenizer.new(param[1]).tokenize
+      puts Latexmath::Aggregator.new(tokens.clone).aggregate.to_json
       expect(Latexmath::Aggregator.new(tokens).aggregate).to eq(param[2])
     end
   end

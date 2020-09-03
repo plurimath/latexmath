@@ -4,7 +4,7 @@ module Latexmath
       @aggregate = aggregate
     end
 
-    def convert(xmlns = 'http://www.w3.org/1998/Math/MathML', display = 'inline')
+    def convert(xmlns = 'http://www.w3.org/1998/Math/MathML', display = 'block')
       @doc = Ox::Document.new
       math = Ox::Element.new('math')
       math = Latexmath::XML::Element.new(@doc, 'math', { xmlns: xmlns, display: display })
@@ -22,7 +22,7 @@ module Latexmath
       if element == '\\displaystyle'
       elsif element.nil?
         Latexmath::XML::Element.new(parent, 'mi')
-      elsif element.match?(/\d+(.\d+)?/)
+      elsif element.match?(/^\d+(.\d+)?$/)
         el = Latexmath::XML::Element.new(parent, 'mn')
         el.text = element
       elsif element.size > 0 && '<>&'.include?(element)
@@ -45,6 +45,20 @@ module Latexmath
         el = Latexmath::XML::Element.new(parent, 'mtext')
         matches = element.match(/\\textrm{([^}]*)}/)
         el.text = matches[1]
+      elsif element.start_with?('\\vec')
+        el = Latexmath::XML::Element.new(parent, 'mover', {accent: 'true'})
+        mi = Latexmath::XML::Element.new(el, 'mi')
+        matches = element.match(/\\vec{([^}]*)}/)
+        mi.text = matches[1]
+        mo = Latexmath::XML::Element.new(el, 'mo', {stretchy: 'false'})
+        mo.text = "&#x#{Latexmath::Symbol.get('\\vec')};"
+      elsif element.start_with?('\\hat')
+        el = Latexmath::XML::Element.new(parent, 'mover', {accent: 'true'})
+        mi = Latexmath::XML::Element.new(el, 'mi')
+        matches = element.match(/\\hat{([^}]*)}/)
+        mi.text = matches[1]
+        mo = Latexmath::XML::Element.new(el, 'mo', {stretchy: 'false'})
+        mo.text = "&#x#{Latexmath::Symbol.get('\\hat')};"
       elsif element.start_with?('\\mbox')
         el = Latexmath::XML::Element.new(parent, 'mtext')
         matches = element.match(/\\mbox{([^}]*)}/)
@@ -98,10 +112,81 @@ module Latexmath
     end
 
     def convert_array_content(param, parent, alignment = '')
+      all_are_list = param.all? { |item| item.is_a?(Array) }
+
+      if all_are_list
+        param.each do |row|
+          convert_array_array(row, parent, alignment)
+        end
+      else
+        convert_array_row(param, parent, alignment)
+      end
+    end
+
+    def convert_array_array(row, parent, alignment)
       if alignment&.include?('|')
         _alignment = []
         column_lines = []
-        alignment.each do |j|
+        alignment.chars.each do |j|
+          if j == '|'
+            column_lines << 'solid'
+          else
+            _alignment << j
+          end
+          column_lines << 'none' if _alignment.size - column_lines.size == 2
+        end
+        parent.set_attribute('columnlines', column_lines.join(' '))
+      else
+        _alignment = alignment.chars
+      end
+
+      mtr = Latexmath::XML::Element.new(parent, 'mtr')
+      iterable = Range.new(0, row.size - 1).each_compat
+
+      has_row_line = false
+      index = 0
+      row_lines = []
+
+      while i = iterable.next
+        element = row[i]
+        if element == '\\hline'
+          row_lines << 'solid'
+          has_row_line = true
+          row_lines.insert(0, 'none')
+          next
+        end
+        align = _alignment[index]
+
+        mtd = if %w[r l c].include?(align)
+          column_align = { 'r' => 'right', 'l' => 'left', 'c' => 'center' }.fetch(align, nil)
+          Latexmath::XML::Element.new(mtr, 'mtd', { columnalign: column_align })
+        else
+          Latexmath::XML::Element.new(mtr, 'mtd')
+        end
+
+        if element.is_a?(Array)
+          classify_subgroup(element, mtd)
+        elsif COMMANDS.include?(element)
+          convert_command(element, row, i, iterable, mtd)
+        else
+          classify(element, mtd)
+        end
+        index += 1
+        begin
+          iterable.peek
+        rescue StandardError
+          break
+        end
+      end
+
+      parent.set_attribute('rowlines', row_lines.join(' ')) if row_lines.include?('solid')
+    end
+
+    def convert_array_row(param, parent, alignment = '')
+      if alignment&.include?('|')
+        _alignment = []
+        column_lines = []
+        alignment.chars.each do |j|
           if j == '|'
             column_lines << 'solid'
           else
@@ -117,49 +202,59 @@ module Latexmath
       row_lines = []
       row_count = 0
 
-      param.each do |row|
-        next if row.nil?
-
-        row_count += 1
+      if param.all?{|d| !d.is_a?(Array)}
         mtr = Latexmath::XML::Element.new(parent, 'mtr')
-        iterable = Range.new(0, row.size - 1).each_compat
-
-        index = 0
-        has_row_line = false
-
-        while i = iterable.next
-          element = row[i]
-          if element == '\\hline' && row_count > 1
-            row_lines << 'solid'
-            has_row_line = true
-            next
-          end
-          align = _alignment[index]
-
-          mtd = if %w[r l c].include?(align)
-                  column_align = { 'r' => 'right', 'l' => 'left', 'c' => 'center' }.fetch(align, nil)
-                  Latexmath::XML::Element.new(mtr, 'mtd', { columnalign: column_align })
-                else
-                  Latexmath::XML::Element.new(mtr, 'mtd')
-          end
-
-          if element.is_a?(Array)
-            classify_subgroup(element, mtd)
-          else
-            classify(element, mtd)
-          end
-
-          index += 1
-
-          begin
-            iterable.peek
-          rescue StandardError
-            break
-          end
+        param.each do |element  |
+          mtd = Latexmath::XML::Element.new(mtr, 'mtd')
+          classify(element, mtd)
         end
+      else
+        param.each do |row|
+          next if row.nil?
 
-        row_lines << 'none' if !has_row_line && row_count > 1
+          row_count += 1
+          mtr = Latexmath::XML::Element.new(parent, 'mtr')
+          iterable = Range.new(0, row.size - 1).each_compat
+
+          index = 0
+          has_row_line = false
+
+          while i = iterable.next
+            element = row[i]
+            if element == '\\hline' && row_count > 1
+              row_lines << 'solid'
+              has_row_line = true
+              next
+            end
+            align = _alignment[index]
+
+            mtd = if %w[r l c].include?(align)
+                    column_align = { 'r' => 'right', 'l' => 'left', 'c' => 'center' }.fetch(align, nil)
+                    Latexmath::XML::Element.new(mtr, 'mtd', { columnalign: column_align })
+                  else
+                    Latexmath::XML::Element.new(mtr, 'mtd')
+            end
+
+            if element.is_a?(Array)
+              classify_subgroup(element, mtd)
+            else
+              classify(element, mtd)
+            end
+
+            index += 1
+
+            begin
+              iterable.peek
+            rescue StandardError
+              break
+            end
+          end
+
+          row_lines << 'none' if !has_row_line && row_count > 1
+        end
       end
+
+
       parent.set_attribute('rowlines', row_lines.join(' ')) if row_lines.include?('solid')
     end
 
@@ -238,12 +333,18 @@ module Latexmath
 
     def convert_matrix_content(param, parent, alignment, single_mtd = true)
       return if param.size == 0
+      return unless param.is_a?(Array)
 
       all_are_list = param.all? { |item| item.is_a?(Array) }
 
       if all_are_list
         param.each do |row|
-          convert_matrix_row(row, parent, alignment, single_mtd)
+          if row.empty?
+            mtr = Latexmath::XML::Element.new(parent, 'mtr')
+            Latexmath::XML::Element.new(mtr, 'mtd')
+          else
+            convert_matrix_row(row, parent, alignment, single_mtd)
+          end
         end
       else
         convert_matrix_row(param, parent, alignment, single_mtd)

@@ -11,8 +11,8 @@ task 'build-opal' do
 
   b = Opal::Builder.new
 
-  b.append_paths __dir__+'/lib'
-  b.append_paths __dir__+'/opal'
+  b.append_paths __dir__ + '/lib'
+  b.append_paths __dir__ + '/opal'
   b.use_gem 'htmlentities'
 
   build = b.build('latexmath-opal').to_s
@@ -29,4 +29,4 @@ task 'spec-opal' => 'build-opal' do
   ENV.delete 'TEST_OPAL'
 end
 
-task default: [:spec, "spec-opal"]
+task default: [:spec, 'spec-opal']

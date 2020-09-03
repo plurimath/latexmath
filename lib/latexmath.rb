@@ -26,10 +26,11 @@ module Latexmath
     '\\Vmatrix',
     '\\Vmatrix*',
     '\\array',
+    '\\split',
     '\\substack'
   ].freeze
 
-  SPACES = ['\\,', '\\:', '\\;', '\\\\', '\\quad'].freeze
+  SPACES = ['\\,', '\\:', '\\;', '\\\\'].freeze
 
   LIMITS = ['\\lim', '\\sup', '\\inf', '\\max', '\\min'].freeze
   COMMANDS = {
@@ -58,6 +59,7 @@ module Latexmath
     '\\overrightarrow' => [1, 'mover', {}]
   }
 
+  COMMANDS['\\quad'] = [0, 'mo', { "mathvariant": 'italic', separator: 'true' }]
   COMMANDS['\\qquad'] = [0, 'mo', { "mathvariant": 'italic', separator: 'true' }]
   SPACES.each do |space|
     COMMANDS[space] = [0, 'mspace', { "width": '0.167em' }]

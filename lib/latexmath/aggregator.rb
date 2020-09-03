@@ -89,8 +89,7 @@ module Latexmath
             aggregated = []
             aggregated << LATEX_FRAC
             aggregated << numerator
-            denominator = next_item_or_group(tokens)
-            aggregated << [denominator]
+            aggregated << aggregate(tokens)
           else
             aggregated << token
           end
@@ -162,6 +161,8 @@ module Latexmath
                   end
           elsif SUB_SUP.include?(token)
             row = process_sub_sup(row, token, tokens)
+          elsif token.start_with?(LATEX_BEGIN)
+            row += environment(token, tokens)
           else
             row << token
           end
