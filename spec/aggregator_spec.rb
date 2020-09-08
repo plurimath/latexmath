@@ -432,7 +432,6 @@ RSpec.describe Latexmath do
   PARAMS.each do |param|
     it (param[0]).to_s do
       tokens = Latexmath::Tokenizer.new(param[1]).tokenize
-      puts Latexmath::Aggregator.new(tokens.clone).aggregate.to_json
       expect(Latexmath::Aggregator.new(tokens).aggregate).to eq(param[2])
     end
   end
