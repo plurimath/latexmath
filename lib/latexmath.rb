@@ -10,6 +10,7 @@ require_relative 'latexmath/converter'
 require_relative 'latexmath/symbol'
 require_relative 'latexmath/tokenizer'
 require_relative 'latexmath/xml/element'
+require_relative 'latexmath/equation'
 
 module Latexmath
   MATRICES = [
