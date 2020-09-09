@@ -25,11 +25,14 @@ class HTMLEntities
 
     def build_extended_entity_encoder(instructions)
       operations = [:named, :decimal, :hexadecimal] & instructions
+
       self.class.define_method :encode_extended do |char|
-        operations.each{ |encoder|
+
+        operations.each do |encoder|
           encoded = send(:"encode_#{encoder}", char)
           return encoded if encoded
-        }
+        end
+
         char
       end
     end

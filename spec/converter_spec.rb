@@ -1,4 +1,4 @@
-PARAMS = [
+CONVERTER_PARAMS = [
   ['single identifier', 'x', '<mi>x</mi>'],
   ['multiple identifier', 'xyz', '<mi>x</mi><mi>y</mi><mi>z</mi>'],
   ['single number', '3', '<mn>3</mn>'],
@@ -1930,8 +1930,8 @@ PARAMS = [
   ]
 ].freeze
 
-RSpec.describe Latexmath do
-  PARAMS.each do |param|
+RSpec.describe Latexmath::Converter do
+  CONVERTER_PARAMS.each do |param|
     it (param[0]).to_s do
       tokens = Latexmath::Tokenizer.new(param[1]).tokenize
       aggr = Latexmath::Aggregator.new(tokens).aggregate
