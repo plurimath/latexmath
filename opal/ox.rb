@@ -33,6 +33,10 @@ module Ox
       self
     end
 
+    def value= value
+      @tag_name = value
+    end
+
     def dump
       attrs = @attrs.map do |k,v|
         %Q< #{k}="#{CODER.encode(v)}">
