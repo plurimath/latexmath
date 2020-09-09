@@ -23,21 +23,25 @@ if ENV['TEST_OPAL'] == '1'
 
   # A shim Latexmath module that actually executes the JS file.
   module Latexmath
-    def self.fixnils str
-      str.gsub('{"$$id":4}', 'Opal.nil')
+    def self.fixinils str
+      str.gsub('null', 'Opal.nil').gsub('{"$$id":4}', 'Opal.nil')
+    end
+
+    def self.fixonils str
+      JSON.load(str.to_json.gsub('{"$$id":4}', 'null'))
     end
 
     class Tokenizer
       def initialize data; @data = data; end
-      def tokenize; $context.eval("Opal.Latexmath.Tokenizer.$new(#{@data.to_json}).$tokenize()"); end
+      def tokenize; Latexmath.fixonils $context.eval("Opal.Latexmath.Tokenizer.$new(#{Latexmath.fixinils @data.to_json}).$tokenize()"); end
     end
     class Aggregator
       def initialize data; @data = data; end
-      def aggregate; $context.eval("Opal.Latexmath.Aggregator.$new(#{@data.to_json}).$aggregate()"); end
+      def aggregate; Latexmath.fixonils $context.eval("Opal.Latexmath.Aggregator.$new(#{Latexmath.fixinils @data.to_json}).$aggregate()"); end
     end
     class Converter
       def initialize data; @data = data; end
-      def convert; $context.eval("Opal.Latexmath.Converter.$new(#{Latexmath.fixnils(@data.to_json)}).$convert()"); end
+      def convert; Latexmath.fixonils $context.eval("Opal.Latexmath.Converter.$new(#{Latexmath.fixinils @data.to_json}).$convert()"); end
     end
   end
 else
