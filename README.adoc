@@ -16,3 +16,13 @@ It also works in reverse by translating MathML into LaTeX code.
 The LaTeX math syntax supports `amsmath`, `array`, `split` and `pmatrix` packages.
 
 NOTE: Bolding, symbols like `\backepsilon`, equation alignment, are all supported.
+
+== Usage
+
+[source,ruby]
+-------------
+require "latexmath"
+
+latex = "$$f_i =  \sum_{j=1}^2 s_{ij} n_j \quad {\rm for} \quad i = 1,2$$"
+mathml = Latexmath.parse(latex).to_mathml
+-------------

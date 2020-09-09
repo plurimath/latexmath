@@ -5,7 +5,9 @@ module Latexmath
     end
 
     def to_mathml
-      @latex
+      tokens = Tokenizer.new(@latex).tokenize
+      aggregate = Aggregator.new(tokens).aggregate
+      Converter.new(aggregate).convert
     end
   end
 end
