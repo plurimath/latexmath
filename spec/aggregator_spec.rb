@@ -1,4 +1,4 @@
-PARAMS = [
+AGGREGATOR_PARAMS = [
   ['alphabets', 'abcdef', 'abcdef'.chars.to_a],
   ['empty group', '{{}}', [[[]]]],
   ['numbers', '445454', ['445454']],
@@ -428,8 +428,8 @@ PARAMS = [
   ]
 ].freeze
 
-RSpec.describe Latexmath do
-  PARAMS.each do |param|
+RSpec.describe Latexmath::Aggregator do
+  AGGREGATOR_PARAMS.each do |param|
     it (param[0]).to_s do
       tokens = Latexmath::Tokenizer.new(param[1]).tokenize
       expect(Latexmath::Aggregator.new(tokens).aggregate).to eq(param[2])

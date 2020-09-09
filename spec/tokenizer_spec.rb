@@ -1,4 +1,4 @@
-PARAMS = [
+TOKENIZER_PARAMS = [
   ['single backslash', '\\', ['\\']],
   ['alphabets', 'abcdef', 'abcdef'.chars.to_a],
   ['numbers', '445454', ['445454']],
@@ -539,12 +539,12 @@ PARAMS = [
   ]
 ].freeze
 
-RSpec.describe Latexmath do
+RSpec.describe Latexmath::Tokenizer do
   it 'has a version number' do
     expect(Latexmath::VERSION).not_to be nil
   end
 
-  PARAMS.each do |param|
+  TOKENIZER_PARAMS.each do |param|
     it (param[0]).to_s do
       expect(Latexmath::Tokenizer.new(param[1]).tokenize).to eq(param[2])
     end
