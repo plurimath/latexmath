@@ -65,7 +65,7 @@ jobs:
       - name: Run RSpecs
         if: matrix.os == 'ubuntu-latest'
         run: |
-          bundle exec rspec
+          bundle exec rake
 
       - name: Run RSpecs
         if: matrix.os == 'macos-latest'
