@@ -17,8 +17,16 @@ module Latexmath
 
     private
 
-    def classify(element, parent, is_math_mode = false)
-      symbol = Latexmath::Symbol.get(element)
+    def apply_style(element, elements, index, iterable, parent)
+      style = STYLES[element]
+      index += 1
+      iterable.next
+      classify_subgroup(elements[index], parent, false, style)
+    end
+
+    def classify(element, parent, is_math_mode = false, style = nil)
+      symbol = Latexmath::Symbol.get("\\mathbf{#{element}}") unless style.nil?
+      symbol ||= Latexmath::Symbol.get(element)
       if element == '\\displaystyle'
       elsif element.nil?
         Latexmath::XML::Element.new(parent, 'mi')
@@ -76,11 +84,11 @@ module Latexmath
       else
         tag_name = is_math_mode ? 'mo' : 'mi'
         el = Latexmath::XML::Element.new(parent, tag_name)
-        el.text = element
+        el.text = symbol ? "&#x#{symbol};" : element
       end
     end
 
-    def classify_subgroup(elements, row, is_math_mode = false)
+    def classify_subgroup(elements, row, is_math_mode = false, style = nil)
       return if elements.size == 0
 
       iterable = Range.new(0, (elements.size - 1)).each_compat
@@ -91,11 +99,13 @@ module Latexmath
           classify_subgroup(element, _row, is_math_mode)
           is_math_mode = false
         elsif COMMANDS.keys.include?(element)
-          convert_command(element, elements, i, iterable, row)
+          convert_command(element, elements, i, iterable, row, style)
+        elsif STYLES.keys.include?(element)
+          apply_style(element, elements, i, iterable, row)
         elsif element.start_with?('\\math')
           is_math_mode = true
         else
-          classify(element, row, is_math_mode)
+          classify(element, row, is_math_mode, style)
         end
         begin
           iterable.peek
@@ -258,7 +268,7 @@ module Latexmath
       parent.set_attribute('rowlines', row_lines.join(' ')) if row_lines.include?('solid')
     end
 
-    def convert_command(element, elements, index, iterable, parent)
+    def convert_command(element, elements, index, iterable, parent, style = nil)
       get_prefix_element(element, parent)
 
       parent = Latexmath::XML::Element.new(parent, 'mstyle', { scriptlevel: '1' }) if element == '\\substack'
@@ -307,9 +317,9 @@ module Latexmath
         else
           if param.is_a?(Array)
             _parent = Latexmath::XML::Element.new(new_parent, 'mrow')
-            classify_subgroup(param, _parent)
+            classify_subgroup(param, _parent, false, style)
           else
-            classify(param, new_parent)
+            classify(param, new_parent, false, style)
           end
         end
       end
