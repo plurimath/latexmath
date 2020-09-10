@@ -32,6 +32,8 @@ module Latexmath
                 '\\\\' # matched
               elsif scan(/\\mbox{[^\}]+}/)
                 matched
+              elsif scan(/\\Delta/)
+                matched
               elsif scan(/\\vec{[^\}]+}/)
                 matched
               elsif scan(/\\hat{[^\}]+}/)
