@@ -32,6 +32,9 @@ module Latexmath
   ].freeze
 
   SPACES = ['\\,', '\\:', '\\;', '\\\\'].freeze
+  STYLES = {
+    '\\bf' => 'mathbf'
+  }.freeze
 
   LIMITS = ['\\lim', '\\sup', '\\inf', '\\max', '\\min'].freeze
   COMMANDS = {
