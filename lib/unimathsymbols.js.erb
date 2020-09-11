@@ -1,4 +1,4 @@
-<%# This preprocesses unimathsymbols.txt for Opal %>
-<% require_relative 'lib/latexmath/symbol' %>
+<%# This preprocesses Latexmath::SYMBOLS constant for Opal %>
+<% require_relative 'lib/latexmath/constants/symbols' %>
 
-globalThis.unimathsymbols = <%= Latexmath::Symbol.instance.symbols.to_json %>;
+globalThis.unimathsymbols = <%= Latexmath::SYMBOLS.to_json %>;
