@@ -58,9 +58,7 @@ module Latexmath
                 matched
               elsif scan(/\\\{/)
                 matched
-              elsif scan(/\\,/)
-                matched
-              elsif scan(/\\:/)
+              elsif scan(/\\[:;,]/)
                 matched
               elsif scan(/\\/)
                 matched
