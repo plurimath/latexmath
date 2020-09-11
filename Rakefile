@@ -1,22 +1,7 @@
 require 'bundler/setup'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
-require_relative 'lib/latexmath'
-
 RSpec::Core::RakeTask.new(:spec)
-
-desc 'Generate and write MathML fixtures'
-task 'create-mathml-fixtures' do
-  records = Dir.glob('spec/fixtures/*/*.tex')
-
-  records.each do |file|
-    tex = File.read("./#{file}")
-    tokens = Latexmath::Tokenizer.new(tex).tokenize
-    aggr = Latexmath::Aggregator.new(tokens).aggregate
-
-    File.write("./#{file.chomp('.tex')}.html", Latexmath::Converter.new(aggr).convert)
-  end
-end
 
 task 'build-opal' do
   require 'opal'
@@ -92,5 +77,19 @@ end
 
 Rake::Task['build'].enhance ['lib/latexmath/constants/symbols.rb']
 Rake::Task[:spec].enhance ['lib/latexmath/constants/symbols.rb']
+
+desc 'Generate and write MathML fixtures'
+task 'create-mathml-fixtures' do
+  require_relative 'lib/latexmath'
+  records = Dir.glob('spec/fixtures/*/*.tex')
+
+  records.each do |file|
+    tex = File.read("./#{file}")
+    tokens = Latexmath::Tokenizer.new(tex).tokenize
+    aggr = Latexmath::Aggregator.new(tokens).aggregate
+
+    File.write("./#{file.chomp('.tex')}.html", Latexmath::Converter.new(aggr).convert)
+  end
+end
 
 task default: [:spec, 'spec-opal']
