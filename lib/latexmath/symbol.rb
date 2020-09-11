@@ -13,8 +13,9 @@ module Latexmath
         require 'native'
         @symbols ||= Native::Object.new(`globalThis.unimathsymbols`)
       else
-        @symbols ||= Latexmath::SYMBOLS
+        @symbols ||= Latexmath::Constants::SYMBOLS
       end
     end
+
   end
 end
