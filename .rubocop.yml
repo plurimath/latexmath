@@ -84,8 +84,6 @@ Style/Documentation:
     - 'lib/latexmath/aggregator.rb'
     - 'lib/latexmath/converter.rb'
     - 'lib/latexmath/equation.rb'
-    - 'lib/latexmath/latexml_requirement.rb'
-    - 'lib/latexmath/requirement.rb'
     - 'lib/latexmath/tokenizer.rb'
 
 # Offense count: 18
@@ -121,7 +119,6 @@ Style/NumericPredicate:
     - 'spec/**/*'
     - 'lib/latexmath/aggregator.rb'
     - 'lib/latexmath/converter.rb'
-    - 'lib/latexmath/latexml_requirement.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
