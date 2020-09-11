@@ -19,6 +19,4 @@
 # ignore MacOS system file
 .DS_Store
 
-*.tex.html
-
 /dist/

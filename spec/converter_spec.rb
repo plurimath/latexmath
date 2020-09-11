@@ -1930,6 +1930,13 @@ CONVERTER_PARAMS = [
   ]
 ].freeze
 
+CONVERTER_FIXTURES = [
+  [
+    'array #3',
+    'array/c'
+  ],
+].freeze
+
 RSpec.describe Latexmath::Converter do
   CONVERTER_PARAMS.each do |param|
     it (param[0]).to_s do
@@ -1945,15 +1952,14 @@ RSpec.describe Latexmath::Converter do
     end
   end
 
-  records = Dir.glob('spec/fixtures/*/*.tex')
-
-  records.each do |file|
-    it file do
-      tex = File.read("./#{file}")
+  CONVERTER_FIXTURES.each do |param|
+    it (param[0]).to_s do
+      tex = File.read("./spec/fixtures/#{param[1]}.tex")
       tokens = Latexmath::Tokenizer.new(tex).tokenize
       aggr = Latexmath::Aggregator.new(tokens).aggregate
+      mathml = File.read("./spec/fixtures/#{param[1]}.html")
 
-      File.write("./#{file}.html", Latexmath::Converter.new(aggr).convert)
+      expect(Latexmath::Converter.new(aggr).convert).to be_equivalent_to(mathml)
     end
   end
 end
