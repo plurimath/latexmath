@@ -9,6 +9,11 @@ module Latexmath
         exp << token
       end
 
+      if exp.first == '\[' && exp.last == '\]'
+        exp.pop
+        exp.shift
+      end
+
       exp
     end
 
@@ -24,10 +29,8 @@ module Latexmath
                 end
               elsif scan(/{\\bf [^}]+}/)
                 matches = matched.match(/{\\bf ([^}]+)}/)
-                symbol = "\\mathbf{#{matches[1]}}"
-                if Latexmath::Symbol.get(symbol)
-                  "&#x#{Latexmath::Symbol.get(symbol)};"
-                end
+                symbol = Latexmath::Symbol.get("\\mathbf{#{matches[1]}}")
+                "&#x#{symbol};" if symbol
               elsif scan(/\\\\\[\d+mm\]/)
                 '\\\\' # matched
               elsif scan(/\\mbox{[^\}]+}/)
