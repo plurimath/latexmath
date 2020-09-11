@@ -21,7 +21,7 @@ module Latexmath
 
     def read_symbols
       @symbols = {}
-      File.readlines('lib/unimathsymbols.txt').each do |line|
+      File.readlines(File.join(File.dirname(__FILE__), "..", 'unimathsymbols.txt')).each do |line|
         next if line.start_with?('#')
 
         columns = line.chop.split('^')
