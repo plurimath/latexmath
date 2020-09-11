@@ -301,6 +301,9 @@ module Latexmath
         if element == '_' && index == 1 && param == '\\sum'
           new_parent.tag = 'munder'
           classify(param, new_parent)
+        elsif element == '_^' && param == '\\sum'
+          new_parent.tag = 'munderover'
+          classify(param, new_parent)
         elsif element == '\\left' || element == '\\right'
           if param == '.'
 
