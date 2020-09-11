@@ -4,7 +4,6 @@ require 'htmlentities'
 require 'ox'
 require_relative 'latexmath/ext'
 require_relative 'latexmath/version'
-#require_relative 'latexmath/latexml_requirement'
 require_relative 'latexmath/aggregator'
 require_relative 'latexmath/converter'
 require_relative 'latexmath/symbol'
@@ -76,10 +75,6 @@ module Latexmath
   LIMITS.each do |limit|
     COMMANDS[limit] = [1, 'munder', {}]
   end
-
-  Requirements = {
-    #latexml: LatexmlRequirement.new
-  }.freeze
 
   def self.parse(string)
     lxm_input = HTMLEntities.new.decode(string)

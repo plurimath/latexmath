@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'rspec/matchers'
 require 'equivalent-xml'
+require_relative 'latexml_requirement'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
