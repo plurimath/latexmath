@@ -12,7 +12,7 @@ module Latexmath
 
       classify_subgroup(@aggregate, mrow)
 
-      Ox.dump(@doc)
+      Ox.dump(@doc, indent: -1)
     end
 
     private
