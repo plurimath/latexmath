@@ -1,4 +1,4 @@
-require 'byebug' unless RUBY_ENGINE == 'opal'
+#require 'byebug' unless RUBY_ENGINE == 'opal'
 require 'json'
 require 'htmlentities'
 require 'ox'
