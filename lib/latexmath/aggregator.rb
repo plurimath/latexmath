@@ -31,8 +31,15 @@ module Latexmath
       @tokens = tokens
     end
 
+    def new_aggregate(tokens)
+      tokens.each do |token|
+        Latexmath::Common::Number.new(token)
+      end
+    end
+
     def aggregate(tokens = @tokens)
       aggregated = []
+      new_aggregate(tokens.clone)
 
       loop do
         begin
