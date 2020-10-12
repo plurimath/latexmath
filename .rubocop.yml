@@ -1,3 +1,6 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.4
 Layout/EndAlignment:
   Exclude:
     - 'lib/latexmath/converter.rb'

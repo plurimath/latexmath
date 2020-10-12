@@ -67,6 +67,7 @@ module Latexmath
               elsif scan(/[0-9]+\.[0-9]+/)
                 matched
               elsif scan(/[0-9]+/)
+                Latexmath::Common::Number.new(matched)
                 matched
               elsif scan(/ /)
                 matched
