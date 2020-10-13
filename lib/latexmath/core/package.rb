@@ -13,8 +13,8 @@ module Latexmath
         reversion: 1, sizer: 1, scope: 1, locked: 1
       }.freeze
 
-      # Define a Macro: Essentially an alias for DefExpandable
-      # For convenience, the $expansion can be a string which will be tokenized.
+      # Define a Macro: Essentially an alias for def expandable
+      # For convenience, the 'expansion' can be a string which will be tokenized.
       MACRO_OPTIONS = {
         scope: 1, locked: 1, mathactive: 1,
         protected: 1, outer: 1, long: 1

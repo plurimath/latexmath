@@ -1,7 +1,8 @@
 module Latexmath
   module Core
     class Stomach
-      def initialize(options)
+      attr_reader :gullet
+      def initialize(options = {})
         @gullet = Latexmath::Core::Gullet.new(options)
         @boxing = []
         @token_stack = []
