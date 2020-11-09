@@ -3,7 +3,7 @@ PATH
   specs:
     latexmath (0.1.5)
       htmlentities (~> 4.3)
-      ox (~> 2.13)
+      ox (= 2.13.3)
 
 GEM
   remote: https://rubygems.org/
