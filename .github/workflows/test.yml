@@ -44,7 +44,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo snap install latexml --edge
-          echo "::add-path::/snap/bin"
+          echo "/snap/bin" >> $GITHUB_PATH
 
       - name: Install LaTeXML on macOS
         if: matrix.os == 'macos-latest'
@@ -52,6 +52,7 @@ jobs:
           brew install libxml2 cpanminus
           env PATH=$(brew --prefix libxml2)/bin:$PATH \
             cpanm --notest XML::LibXSLT@1.96 git://github.com/brucemiller/LaTeXML.git@9a0e7dc5
+          echo "$(brew --prefix perl)/bin" >> $GITHUB_PATH
 
       - name: Install LaTeXML on Windows
         if: matrix.os == 'windows-latest'
@@ -61,20 +62,6 @@ jobs:
           refreshenv
           set PATH=C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;%PATH%
           where latexmlmath
+          echo "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin" >> %GITHUB_PATH%
 
-      - name: Run RSpecs
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          bundle exec rake
-
-      - name: Run RSpecs
-        if: matrix.os == 'macos-latest'
-        run: |
-          env PATH=$(brew --prefix perl)/bin:$PATH bundle exec rake
-
-      - name: Run specs
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $env:Path = "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path"
-          bundle exec rake
+      - run: bundle exec rake
