@@ -14,31 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        ruby: ['2.6', '2.5', '2.4']
+        ruby: ['2.7', '2.6', '2.5', '2.4']
         experimental: [false]
-        include:
-          - ruby: '2.7'
-            os: ubuntu-latest
-            experimental: true
-          - ruby: '2.7'
-            os: macos-latest
-            experimental: true
-          - ruby: '2.7'
-            os: windows-latest
-            experimental: true
 
     steps:
-      - name: Use Ruby
-        uses: actions/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-
       - uses: actions/checkout@master
 
-      - name: Install gems
-        run: |
-          gem install bundler -v "~> 2"
-          bundle install --jobs 4 --retry 5
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
 
       - name: Install LaTeXML on Ubuntu
         if: matrix.os == 'ubuntu-latest'
