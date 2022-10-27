@@ -4,7 +4,7 @@ module Latexmath
       @aggregate = aggregate
     end
 
-    def convert(xmlns = 'http://www.w3.org/1998/Math/MathML', display = 'block')
+    def convert(display = 'block', xmlns = 'http://www.w3.org/1998/Math/MathML')
       @doc = Ox::Document.new
       math = Ox::Element.new('math')
       math = Latexmath::XML::Element.new(@doc, 'math', { xmlns: xmlns, display: display })
