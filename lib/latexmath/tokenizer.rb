@@ -2,6 +2,13 @@ require 'strscan'
 
 module Latexmath
   class Tokenizer < StringScanner
+    attr_reader :display
+
+    def initialize(string)
+      super(string)
+      @display = 'block'
+    end
+
     def tokenize
       exp = []
 
@@ -19,7 +26,12 @@ module Latexmath
 
     def fetch_token
       skip(/\s+/)
-      skip(/\$\$/)
+      if skip(/\$\$/)
+        @display = 'block'
+      end
+      if skip(/\$/)
+        @display = 'inline'
+      end
 
       token = if scan(/\\mathbb\{[^}]+}/)
                 if Latexmath::Symbol.get(matched)
