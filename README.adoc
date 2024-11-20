@@ -1,3 +1,5 @@
+## DEPRECATION NOTICE: This repository is no longer maintained. Please visit link:https://github.com/plurimath/plurimath[Plurimath] for the latest updates and features.
+
 = latexmath
 
 image:https://img.shields.io/gem/v/latexmath.svg["Gem Version", link="https://rubygems.org/gems/latexmath"]
