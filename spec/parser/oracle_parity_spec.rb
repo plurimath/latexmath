@@ -6,7 +6,8 @@ require_relative "parser_helper"
 # Plurimath at the pinned commit) through the internal raw-tree boundary.
 # For every row it requires the same preprocessed text and the same raw tree
 # in the capture's tagged form (keys, key order and kinds, slice text and
-# offsets), or, for a grammar refusal, a ParseError at the same position.
+# byte and character offsets), or, for a grammar refusal, a ParseError at
+# the same byte and character position.
 #
 #   LATEXMATH_ORACLE_REPORT     the capture report (required; without it the
 #                               replay is skipped)
@@ -75,8 +76,9 @@ RSpec.describe "raw-tree parity with the legacy oracle" do
           expect(e.input).to eq(pre.dig("ok", "v"))
           expect(e.input.encoding).to eq(Encoding::UTF_8)
           # scripts/oracle/latex_worker.rb records Parsanol's failure
-          # position (Parsanol::Cause#pos, a byte offset) as char_offset.
-          expect(e.byte_offset).to eq(error["char_offset"])
+          # position (Parsanol::Cause#pos, a byte offset) and the character
+          # offset it falls at.
+          expect([e.byte_offset, e.char_offset]).to eq([error.fetch("byte_offset"), error.fetch("char_offset")])
         }
     end
   end

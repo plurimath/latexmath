@@ -1,0 +1,199 @@
+name: replay
+
+# Full raw-tree replay: captures the legacy oracle for every LaTeX case of
+# the pinned plurimath-testsuite fixtures (one fresh process per case, so in
+# shards) and for the authored rows, and replays every capture through
+# spec/parser/oracle_parity_spec.rb on the Ruby and native engines.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 3 * * 1"
+  pull_request:
+    paths:
+      - "artifacts/**"
+      - "data/**"
+      - "grammars/**"
+      - "lib/latexmath/parser.rb"
+      - "lib/latexmath/parser/**"
+      - "corpora/oracle/**"
+      - "scripts/compile.rb"
+      - "scripts/generate_grammar.rb"
+      - "scripts/oracle/**"
+      - "spec/parser/**"
+      - ".github/workflows/replay.yml"
+
+permissions:
+  contents: read
+
+# An explicit bash shell runs with pipefail, so a failing capture or replay
+# fails its step through the tee.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  fixtures:
+    name: Full replay (shard ${{ matrix.shard }} of 8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      TESTSUITE_COMMIT: 281059b213026a54a193cb020a5816f57cabf3a8
+      FIXTURES_SHA256: 22ef60184fc547150c4f525f627b2bec22d9a3c4bb52794f772cf2a2dde78b59
+      # Parsanol ships a precompiled native extension for x86_64 Linux;
+      # fail instead of skipping the native-engine examples if it is missing.
+      LATEXMATH_REQUIRE_NATIVE: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pinned Plurimath commit
+        id: pins
+        run: |
+          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath
+          ref: ${{ steps.pins.outputs.commit }}
+          path: tmp/oracle-plurimath
+          persist-credentials: false
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath-testsuite
+          ref: ${{ env.TESTSUITE_COMMIT }}
+          path: tmp/testsuite
+          persist-credentials: false
+
+      # oracle.gemfile.lock was resolved with Bundler 4 on Ruby 4.0.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - name: Install the locked oracle bundle
+        run: |
+          echo "/.latexmath-oracle/" >> tmp/oracle-plurimath/.git/info/exclude
+          ruby scripts/oracle/setup.rb --oracle tmp/oracle-plurimath
+
+      - name: Write this shard's inventory from the pinned fixtures
+        run: |
+          echo "$FIXTURES_SHA256  tmp/testsuite/fixtures/parser-expectations.yaml" | sha256sum -c -
+          mkdir -p tmp/replay
+          ruby -ryaml -e '
+            doc = YAML.safe_load_file("tmp/testsuite/fixtures/parser-expectations.yaml")
+            shard = Integer(ARGV[0])
+            latex = doc.fetch("cases").select { |c| c.fetch("input_format") == "latex" }
+            abort "unexpected input transform" unless latex.all? { |c| c.fetch("input_transform") == "identity" }
+            rows = latex.each_with_index.select { |_, i| i % 8 == shard }.map do |c, _|
+              { "id" => c.fetch("id"), "input" => c.fetch("input"), "configuration" => c.fetch("configuration") }
+            end
+            abort "empty shard" if rows.empty?
+            inventory = { "schema" => "latexmath-oracle-inventory/1", "language" => "latex",
+                          "producer" => "plurimath-testsuite fixtures/parser-expectations.yaml, LaTeX case index mod 8 = #{shard}",
+                          "rows" => rows }
+            File.write(ARGV[1], YAML.dump(inventory))
+            puts "#{rows.size} of #{latex.size} LaTeX rows"
+          ' "${{ matrix.shard }}" tmp/replay/inventory.yaml
+
+      - name: Capture the legacy oracle
+        run: >-
+          bundle exec ruby scripts/oracle/capture.rb
+          --oracle tmp/oracle-plurimath
+          --inputs tmp/replay/inventory.yaml
+          --checkpoint tmp/replay/checkpoint.jsonl
+          --report tmp/replay/report.json
+          2>&1 | tee tmp/replay/capture.log
+
+      - name: Replay through the raw-tree boundary on both engines
+        run: >-
+          bundle exec rspec spec/parser/oracle_parity_spec.rb
+          2>&1 | tee tmp/replay/parity.log
+        env:
+          LATEXMATH_ORACLE_REPORT: tmp/replay/report.json
+          LATEXMATH_ORACLE_INVENTORY: tmp/replay/inventory.yaml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-shard-${{ matrix.shard }}
+          path: tmp/replay
+          if-no-files-found: warn
+
+  authored:
+    name: Authored rows replay (Ruby and native)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LATEXMATH_REQUIRE_NATIVE: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pinned Plurimath commit
+        id: pins
+        run: |
+          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath
+          ref: ${{ steps.pins.outputs.commit }}
+          path: tmp/oracle-plurimath
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - name: Install the locked oracle bundle
+        run: |
+          echo "/.latexmath-oracle/" >> tmp/oracle-plurimath/.git/info/exclude
+          ruby scripts/oracle/setup.rb --oracle tmp/oracle-plurimath
+
+      # Every row authored in this repository: the harness smoke rows and
+      # the authored-* rows of the parity sample.
+      - name: Write the authored inventory
+        run: |
+          mkdir -p tmp/replay
+          ruby -ryaml -e '
+            smoke = YAML.safe_load_file("corpora/oracle/smoke.yaml").fetch("rows")
+            sample = YAML.safe_load_file("spec/parser/fixtures/oracle-sample.yaml").fetch("rows")
+                         .select { |r| r.fetch("id").start_with?("authored-") }
+            rows = (smoke + sample).map { |r| r.slice("id", "input", "configuration") }
+            inventory = { "schema" => "latexmath-oracle-inventory/1", "language" => "latex",
+                          "producer" => "authored: corpora/oracle/smoke.yaml and the authored-* rows of spec/parser/fixtures/oracle-sample.yaml",
+                          "rows" => rows }
+            File.write(ARGV[0], YAML.dump(inventory))
+            puts "#{rows.size} authored rows"
+          ' tmp/replay/inventory.yaml
+
+      - name: Capture the legacy oracle
+        run: >-
+          bundle exec ruby scripts/oracle/capture.rb
+          --oracle tmp/oracle-plurimath
+          --inputs tmp/replay/inventory.yaml
+          --checkpoint tmp/replay/checkpoint.jsonl
+          --report tmp/replay/report.json
+          2>&1 | tee tmp/replay/capture.log
+
+      - name: Replay through the raw-tree boundary on both engines
+        run: >-
+          bundle exec rspec spec/parser/oracle_parity_spec.rb
+          2>&1 | tee tmp/replay/parity.log
+        env:
+          LATEXMATH_ORACLE_REPORT: tmp/replay/report.json
+          LATEXMATH_ORACLE_INVENTORY: tmp/replay/inventory.yaml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-authored
+          path: tmp/replay
+          if-no-files-found: warn

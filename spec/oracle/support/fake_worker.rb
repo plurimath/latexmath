@@ -6,7 +6,7 @@
 
 require "json"
 
-request = JSON.parse($stdin.read)
+request = JSON.parse($stdin.read, max_nesting: false)
 row = request.fetch("row")
 if (log = ENV["FAKE_WORKER_LOG"])
   File.open(log, "a") { |f| f.puts(row["id"]) }
@@ -17,6 +17,11 @@ reply = ->(status) { JSON.generate("id" => row["id"], "status" => status) }
 case row.fetch("behaviour")
 when "success"
   $stdout.write(reply.call("ok"))
+when "deep"
+  # A reply nested deeper than JSON's default limit of 100, like the legacy
+  # raw tree of a deeply nested formula.
+  tree = (1..Integer(row.fetch("depth", 300))).reduce("leaf") { |inner, _| { "t" => "array", "items" => [inner] } }
+  $stdout.write(JSON.generate({ "id" => row["id"], "status" => "ok", "tree" => tree }, max_nesting: false))
 when "refusal"
   $stdout.write(reply.call("refused"))
 when "hang"

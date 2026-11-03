@@ -8,10 +8,6 @@
 # locale), input and configuration unchanged. The authored-* rows cover
 # preprocessing, decimal markers, row breaks, multibyte offsets and
 # refusals.
-#
-# latex-parser-3900 (a tenth case) is left out: the capture worker in
-# scripts/oracle cannot serialize its legacy tree (JSON nesting deeper
-# than 100), so it ends as a crash, not as data.
 ---
 schema: latexmath-oracle-inventory/1
 language: latex
@@ -142,6 +138,40 @@ rows:
         s & 0 & 0 \\
         0 & s & 0 \\
         0 & 0 & s
+      \end{array}
+    \right)
+  configuration: {}
+- id: latex-parser-3900
+  input: |
+    \left(
+      \begin{array}{cccccc}
+        {\displaystyle \frac{1}{E_{ll}}} &
+        -{\displaystyle \frac{\nu_{tl}}{E_{tt}}} &
+        -{\displaystyle \frac{\nu_{tl}}{E_{tt}}} &
+        0 &
+        0 &
+        0 \\
+        [3mm] &
+        {\displaystyle \frac{1}{E_{tt}}} &
+        -{\displaystyle \frac{\nu_{tt}}{E_{tt}}} &
+        0 &
+        0 &
+        0 \\
+        [3mm] & &
+        {\displaystyle \frac{1}{E_{tt}}} &
+        0 &
+        0 &
+        0 \\
+        [3mm] & & &
+        {\displaystyle \frac{1}{G_{lt}}} &
+        0 &
+        0 \\
+        [3mm] &
+        \mbox{symmetric} & & &
+        {\displaystyle \frac{1}{G_{tt}}} &
+        0 \\
+        [3mm] & & & & &
+        {\displaystyle \frac{1}{G_{lt}}}
       \end{array}
     \right)
   configuration: {}
