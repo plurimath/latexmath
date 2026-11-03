@@ -1,0 +1,17 @@
+# Source identities for the legacy LaTeX oracle. Changing any value starts a
+# new capture generation; old captures are never reused against new pins.
+plurimath:
+  repository: https://github.com/plurimath/plurimath
+  commit: e7ab4a5186c9be96f62d670574bc2c72f9365ad4
+  # Legacy LaTeX path at that commit (see docs/parser-contract.adoc).
+  latex_sources:
+    lib/plurimath/latex.rb: 384f57fe70a2570bf431f5b34ae61d74083a698afefab78ab8ad1718e52b10e3
+    lib/plurimath/latex/parser.rb: 0a4eac1dbc63c44f57344cb2beab04f93f523e8492ebd3dea7dbbe89cd6d85e5
+    lib/plurimath/latex/parse.rb: 2461135905bb1d3ca0327312aeb458c1243f301c63b293e40b1e9becaaa788c8
+    lib/plurimath/base_number_prefix.rb: e156362859cb15cc19d45a304331df5d4e3e6c82a05eb1da32d5805645977e82
+    lib/plurimath/latex/constants.rb: 1e3a702084614859cace564f889a1b1909b6559ffacdf7458fe4a2a4c7b9ea61
+    lib/plurimath/latex/utility.rb: 868a19dab269c5295fc95b63b4c243db1d435396ead2fd5ab0ea127195ab76fc
+    lib/plurimath/latex/transform.rb: 0280d473fa72498a2d7e2b4e7b092a63ddba69e56f14f2b69494105fa66d38a9
+plurimath_testsuite:
+  repository: https://github.com/plurimath/plurimath-testsuite
+  commit: 281059b213026a54a193cb020a5816f57cabf3a8

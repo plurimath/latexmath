@@ -1,0 +1,608 @@
+{
+  "schema": "latexmath-oracle-capture/1",
+  "oracle": {
+    "plurimath_repository": "https://github.com/plurimath/plurimath",
+    "plurimath_commit": "e7ab4a5186c9be96f62d670574bc2c72f9365ad4",
+    "lock_sha256": "6fd944971a6dca634d53cfa6ae820601bfff69413af4c750224c325936fcca17",
+    "worker_sha256": "db1a7d62761cccb4f6d54d9798f77939c7ebc9937439ec73dab67206979b2d36",
+    "pins_sha256": "8c228c749c7b12c49553e69c7bfaf46358f4bddb3ae06d592e788e589f0cea1a"
+  },
+  "inventory": {
+    "path": "corpora/oracle/smoke.yaml",
+    "sha256": "ea7fca122b696e5a815ff8b0297d2d095ba838bb3fa74522feec610a64c7388e",
+    "rows": 3
+  },
+  "selected_ids": [
+    "smoke-success",
+    "smoke-refusal"
+  ],
+  "settings": {
+    "timeout_s": 300.0
+  },
+  "counts": {
+    "expected": 2,
+    "attempted_this_run": 2,
+    "resumed_from_checkpoint": 0,
+    "succeeded": 1,
+    "refused": 1,
+    "timed_out": 0,
+    "crashed": 0,
+    "missing": 0,
+    "duplicate": 0
+  },
+  "missing_ids": [],
+  "duplicate_ids": [],
+  "reconciled": true,
+  "complete": true,
+  "rows": [
+    {
+      "id": "smoke-success",
+      "duration_s": 14.7,
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "status": "succeeded",
+      "capture": {
+        "id": "smoke-success",
+        "runtime": {
+          "ruby": "ruby 4.0.1 (2026-01-13 revision e04267a14b) +PRISM [x86_64-linux]",
+          "plurimath": "0.11.17",
+          "parsanol": "1.3.130",
+          "parsanol_platform": "x86_64-linux",
+          "parsanol_native": true
+        },
+        "input": {
+          "t": "str",
+          "v": "\\frac{1}{2} + x_{i}^{2}"
+        },
+        "options": {
+          "t": "hash",
+          "entries": []
+        },
+        "preprocessed": {
+          "ok": {
+            "t": "str",
+            "v": "\\frac{1}{2}+x_{i}^{2}",
+            "enc": "US-ASCII"
+          }
+        },
+        "raw_tree": {
+          "ok": {
+            "t": "hash",
+            "entries": [
+              [
+                {
+                  "t": "sym",
+                  "v": "sequence"
+                },
+                {
+                  "t": "hash",
+                  "entries": [
+                    [
+                      {
+                        "t": "sym",
+                        "v": "binary"
+                      },
+                      {
+                        "t": "hash",
+                        "entries": [
+                          [
+                            {
+                              "t": "sym",
+                              "v": "binary"
+                            },
+                            {
+                              "t": "slice",
+                              "v": "frac",
+                              "char_offset": 1,
+                              "byte_offset": 1
+                            }
+                          ],
+                          [
+                            {
+                              "t": "sym",
+                              "v": "first_value"
+                            },
+                            {
+                              "t": "hash",
+                              "entries": [
+                                [
+                                  {
+                                    "t": "sym",
+                                    "v": "expression"
+                                  },
+                                  {
+                                    "t": "hash",
+                                    "entries": [
+                                      [
+                                        {
+                                          "t": "sym",
+                                          "v": "number"
+                                        },
+                                        {
+                                          "t": "slice",
+                                          "v": "1",
+                                          "char_offset": 6,
+                                          "byte_offset": 6
+                                        }
+                                      ]
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ],
+                          [
+                            {
+                              "t": "sym",
+                              "v": "second_value"
+                            },
+                            {
+                              "t": "hash",
+                              "entries": [
+                                [
+                                  {
+                                    "t": "sym",
+                                    "v": "expression"
+                                  },
+                                  {
+                                    "t": "hash",
+                                    "entries": [
+                                      [
+                                        {
+                                          "t": "sym",
+                                          "v": "number"
+                                        },
+                                        {
+                                          "t": "slice",
+                                          "v": "2",
+                                          "char_offset": 9,
+                                          "byte_offset": 9
+                                        }
+                                      ]
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              [
+                {
+                  "t": "sym",
+                  "v": "expression"
+                },
+                {
+                  "t": "hash",
+                  "entries": [
+                    [
+                      {
+                        "t": "sym",
+                        "v": "sequence"
+                      },
+                      {
+                        "t": "hash",
+                        "entries": [
+                          [
+                            {
+                              "t": "sym",
+                              "v": "operant"
+                            },
+                            {
+                              "t": "slice",
+                              "v": "+",
+                              "char_offset": 11,
+                              "byte_offset": 11
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    [
+                      {
+                        "t": "sym",
+                        "v": "expression"
+                      },
+                      {
+                        "t": "hash",
+                        "entries": [
+                          [
+                            {
+                              "t": "sym",
+                              "v": "power_base"
+                            },
+                            {
+                              "t": "hash",
+                              "entries": [
+                                [
+                                  {
+                                    "t": "sym",
+                                    "v": "symbols"
+                                  },
+                                  {
+                                    "t": "slice",
+                                    "v": "x",
+                                    "char_offset": 12,
+                                    "byte_offset": 12
+                                  }
+                                ],
+                                [
+                                  {
+                                    "t": "sym",
+                                    "v": "subscript"
+                                  },
+                                  {
+                                    "t": "hash",
+                                    "entries": [
+                                      [
+                                        {
+                                          "t": "sym",
+                                          "v": "expression"
+                                        },
+                                        {
+                                          "t": "hash",
+                                          "entries": [
+                                            [
+                                              {
+                                                "t": "sym",
+                                                "v": "symbols"
+                                              },
+                                              {
+                                                "t": "slice",
+                                                "v": "i",
+                                                "char_offset": 15,
+                                                "byte_offset": 15
+                                              }
+                                            ]
+                                          ]
+                                        }
+                                      ]
+                                    ]
+                                  }
+                                ],
+                                [
+                                  {
+                                    "t": "sym",
+                                    "v": "supscript"
+                                  },
+                                  {
+                                    "t": "hash",
+                                    "entries": [
+                                      [
+                                        {
+                                          "t": "sym",
+                                          "v": "expression"
+                                        },
+                                        {
+                                          "t": "hash",
+                                          "entries": [
+                                            [
+                                              {
+                                                "t": "sym",
+                                                "v": "number"
+                                              },
+                                              {
+                                                "t": "slice",
+                                                "v": "2",
+                                                "char_offset": 19,
+                                                "byte_offset": 19
+                                              }
+                                            ]
+                                          ]
+                                        }
+                                      ]
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "status": "ok",
+        "formula": {
+          "t": "object",
+          "class": "Plurimath::Math::Formula",
+          "ivars": [
+            [
+              "@value",
+              {
+                "t": "array",
+                "items": [
+                  {
+                    "t": "object",
+                    "class": "Plurimath::Math::Function::Frac",
+                    "ivars": [
+                      [
+                        "@parameter_one",
+                        {
+                          "t": "object",
+                          "class": "Plurimath::Math::Number",
+                          "ivars": [
+                            [
+                              "@value",
+                              {
+                                "t": "str",
+                                "v": "1"
+                              }
+                            ],
+                            [
+                              "@mini_sub_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@mini_sup_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@base",
+                              {
+                                "t": "nil"
+                              }
+                            ]
+                          ]
+                        }
+                      ],
+                      [
+                        "@parameter_two",
+                        {
+                          "t": "object",
+                          "class": "Plurimath::Math::Number",
+                          "ivars": [
+                            [
+                              "@value",
+                              {
+                                "t": "str",
+                                "v": "2"
+                              }
+                            ],
+                            [
+                              "@mini_sub_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@mini_sup_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@base",
+                              {
+                                "t": "nil"
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "t": "object",
+                    "class": "Plurimath::Math::Symbols::Plus",
+                    "ivars": [
+                      [
+                        "@value",
+                        {
+                          "t": "nil"
+                        }
+                      ]
+                    ]
+                  },
+                  {
+                    "t": "object",
+                    "class": "Plurimath::Math::Function::PowerBase",
+                    "ivars": [
+                      [
+                        "@parameter_one",
+                        {
+                          "t": "object",
+                          "class": "Plurimath::Math::Symbols::Symbol",
+                          "ivars": [
+                            [
+                              "@value",
+                              {
+                                "t": "str",
+                                "v": "x"
+                              }
+                            ]
+                          ]
+                        }
+                      ],
+                      [
+                        "@parameter_two",
+                        {
+                          "t": "object",
+                          "class": "Plurimath::Math::Symbols::Symbol",
+                          "ivars": [
+                            [
+                              "@value",
+                              {
+                                "t": "str",
+                                "v": "i"
+                              }
+                            ]
+                          ]
+                        }
+                      ],
+                      [
+                        "@parameter_three",
+                        {
+                          "t": "object",
+                          "class": "Plurimath::Math::Number",
+                          "ivars": [
+                            [
+                              "@value",
+                              {
+                                "t": "str",
+                                "v": "2"
+                              }
+                            ],
+                            [
+                              "@mini_sub_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@mini_sup_sized",
+                              {
+                                "t": "bool",
+                                "v": false
+                              }
+                            ],
+                            [
+                              "@base",
+                              {
+                                "t": "nil"
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            ],
+            [
+              "@left_right_wrapper",
+              {
+                "t": "bool",
+                "v": true
+              }
+            ],
+            [
+              "@displaystyle",
+              {
+                "t": "bool",
+                "v": true
+              }
+            ],
+            [
+              "@input_string",
+              {
+                "t": "str",
+                "v": "\\frac{1}{2} + x_{i}^{2}"
+              }
+            ]
+          ]
+        },
+        "writers": {
+          "asciimath": {
+            "ok": {
+              "t": "str",
+              "v": "frac(1)(2) + x_(i)^(2)"
+            }
+          },
+          "latex": {
+            "ok": {
+              "t": "str",
+              "v": "\\frac{1}{2} + x_{i}^{2}"
+            }
+          },
+          "mathml": {
+            "ok": {
+              "t": "str",
+              "v": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\">\n  <mstyle displaystyle=\"true\">\n    <mfrac>\n      <mn>1</mn>\n      <mn>2</mn>\n    </mfrac>\n    <mo>+</mo>\n    <msubsup>\n      <mi>x</mi>\n      <mi>i</mi>\n      <mn>2</mn>\n    </msubsup>\n  </mstyle>\n</math>\n"
+            }
+          },
+          "omml": {
+            "ok": {
+              "t": "str",
+              "v": "<m:oMathPara xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:mo=\"http://schemas.microsoft.com/office/mac/office/2008/main\" xmlns:mv=\"urn:schemas-microsoft-com:mac:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w14=\"http://schemas.microsoft.com/office/word/2010/wordml\" xmlns:w15=\"http://schemas.microsoft.com/office/word/2012/wordml\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:wp14=\"http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing\" xmlns:wpc=\"http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas\" xmlns:wpg=\"http://schemas.microsoft.com/office/word/2010/wordprocessingGroup\" xmlns:wpi=\"http://schemas.microsoft.com/office/word/2010/wordprocessingInk\" xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\">\n  <m:oMath>\n    <m:f>\n      <m:fPr>\n        <m:ctrlPr>\n          <w:rPr>\n            <w:rFonts w:ascii=\"Cambria Math\" w:hAnsi=\"Cambria Math\"/>\n            <w:i/>\n          </w:rPr>\n        </m:ctrlPr>\n      </m:fPr>\n      <m:num>\n        <m:r>\n          <m:t>1</m:t>\n        </m:r>\n      </m:num>\n      <m:den>\n        <m:r>\n          <m:t>2</m:t>\n        </m:r>\n      </m:den>\n    </m:f>\n    <m:r>\n      <m:t>+</m:t>\n    </m:r>\n    <m:sSubSup>\n      <m:sSubSupPr>\n        <m:ctrlPr>\n          <w:rPr>\n            <w:rFonts w:ascii=\"Cambria Math\" w:hAnsi=\"Cambria Math\"/>\n            <w:i/>\n          </w:rPr>\n        </m:ctrlPr>\n      </m:sSubSupPr>\n      <m:e>\n        <m:r>\n          <m:t>x</m:t>\n        </m:r>\n      </m:e>\n      <m:sub>\n        <m:r>\n          <m:t>i</m:t>\n        </m:r>\n      </m:sub>\n      <m:sup>\n        <m:r>\n          <m:t>2</m:t>\n        </m:r>\n      </m:sup>\n    </m:sSubSup>\n  </m:oMath>\n</m:oMathPara>\n"
+            }
+          },
+          "html": {
+            "ok": {
+              "t": "str",
+              "v": "<i>1</i><i>2</i> &#x2b; <i>x</i><sub>i</sub><sup>2</sup>"
+            }
+          },
+          "unicodemath": {
+            "ok": {
+              "t": "str",
+              "v": "(1)/(2) + x_(i)^(2)"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "smoke-refusal",
+      "duration_s": 15.424,
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "status": "refused",
+      "capture": {
+        "id": "smoke-refusal",
+        "runtime": {
+          "ruby": "ruby 4.0.1 (2026-01-13 revision e04267a14b) +PRISM [x86_64-linux]",
+          "plurimath": "0.11.17",
+          "parsanol": "1.3.130",
+          "parsanol_platform": "x86_64-linux",
+          "parsanol_native": true
+        },
+        "input": {
+          "t": "str",
+          "v": "\\frac{1}{"
+        },
+        "options": {
+          "t": "hash",
+          "entries": []
+        },
+        "preprocessed": {
+          "ok": {
+            "t": "str",
+            "v": "\\frac{1}{",
+            "enc": "US-ASCII"
+          }
+        },
+        "raw_tree": {
+          "error": {
+            "class": "Parsanol::ParseFailed",
+            "message_first_line": "Failed to match: expected one of ['\"', '\\rceil', '&#x2309;', '\\text{P[rceiling]}', '\\text{P[~|]}', '\\rangle', '&#x232a;', '&#x27e9;', '\\text{P[:)]}', '\\text{P[>",
+            "message_sha256": "2917986f11a69ae271850a8457ed8cb0a93879e22ffe6ee4fe8fba878f1031a9",
+            "char_offset": 9,
+            "byte_offset": 9
+          }
+        },
+        "status": "refused",
+        "refusal": {
+          "stage": "grammar",
+          "error": {
+            "class": "Plurimath::Math::ParseError",
+            "message_first_line": "[plurimath] Error: Failed to parse the following formula with type `latex`.",
+            "message_sha256": "f4598361467117e731b9050cae457c7f8493663c0bfda96fe680931a4724d844"
+          }
+        }
+      }
+    }
+  ]
+}

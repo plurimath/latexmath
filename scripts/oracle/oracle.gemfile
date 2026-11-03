@@ -1,0 +1,12 @@
+# frozen_string_literal: true
+
+# Isolated dependency set for the legacy Plurimath LaTeX oracle.
+#
+# scripts/oracle/setup.rb copies this file and oracle.gemfile.lock into
+# <oracle checkout>/.latexmath-oracle/ as Gemfile and Gemfile.lock, so the
+# relative path below always points at the pinned Plurimath checkout and the
+# lock stays byte-identical across machines. It is never loaded by the
+# latexmath bundle itself.
+source "https://rubygems.org"
+
+gem "plurimath", path: ".."
