@@ -1,7 +1,18 @@
 require 'bundler/setup'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec)
+# The oracle harness specs need Ruby >= 3.2 and run in their own CI job, so
+# the legacy spec task leaves them out.
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.exclude_pattern = 'spec/oracle/**/*_spec.rb'
+end
+
+namespace :oracle do
+  desc 'Run the legacy-oracle capture harness specs'
+  RSpec::Core::RakeTask.new(:spec) do |t|
+    t.pattern = 'spec/oracle/**/*_spec.rb'
+  end
+end
 
 task 'build-opal' do
   require 'opal'

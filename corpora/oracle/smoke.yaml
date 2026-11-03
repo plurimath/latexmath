@@ -1,0 +1,21 @@
+# Harness smoke rows for the legacy LaTeX oracle (scripts/oracle/capture.rb).
+# Authored in this repository; they exercise the capture boundaries and are
+# not a conformance corpus. Bulk rows come from the pinned plurimath-testsuite
+# in a later generation.
+schema: latexmath-oracle-inventory/1
+language: latex
+producer: authored
+rows:
+- id: smoke-success
+  input: "\\frac{1}{2} + x_{i}^{2}"
+  configuration: {}
+  note: grammar and facade both accept the input
+- id: smoke-refusal
+  input: "\\frac{1}{"
+  configuration: {}
+  note: unterminated group; the legacy grammar rejects it
+- id: smoke-decimal-comma
+  input: "1,5 + x"
+  configuration:
+    locale: fr
+  note: French locale selects the comma decimal marker

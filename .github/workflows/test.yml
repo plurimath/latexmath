@@ -6,6 +6,9 @@ on:
     tags: [ v* ]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Run specs on ${{ matrix.os }} ruby ${{ matrix.ruby }}
@@ -51,3 +54,64 @@ jobs:
           echo "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin" >> %GITHUB_PATH%
 
       - run: bundle exec rake
+
+  oracle-harness:
+    name: Oracle harness specs on ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3', '3.4']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - run: bundle exec rspec spec/oracle
+
+  oracle-smoke:
+    name: Oracle smoke capture against pinned Plurimath
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pinned Plurimath commit
+        id: pins
+        run: |
+          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath
+          ref: ${{ steps.pins.outputs.commit }}
+          path: tmp/oracle-plurimath
+
+      # oracle.gemfile.lock was resolved with Bundler 4 on Ruby 4.0.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: true
+
+      - name: Install the locked oracle bundle
+        run: |
+          echo "/.latexmath-oracle/" >> tmp/oracle-plurimath/.git/info/exclude
+          ruby scripts/oracle/setup.rb --oracle tmp/oracle-plurimath
+
+      - name: Capture the smoke rows
+        run: >-
+          bundle exec ruby scripts/oracle/capture.rb
+          --oracle tmp/oracle-plurimath
+          --ids smoke-success,smoke-refusal
+          --report tmp/oracle-smoke.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oracle-smoke-report
+          path: tmp/oracle-smoke.json
+          if-no-files-found: warn

@@ -1,0 +1,232 @@
+= LaTeX parser contract (syntax)
+:toc:
+
+== Status and scope
+
+This document fixes the LaTeX syntax boundary that the latexmath stage gem
+must reproduce, and the way the legacy behaviour is captured as evidence. It
+covers input preprocessing, the raw grammar tree, decimal markers and errors.
+
+It does not define the typed language model. The gem's one public entry point
+is `Latexmath.parse(input, ...)`, and it returns the typed LaTeX model. The
+fields, types and class names of that model are defined in a later model
+contract. The raw grammar tree described here is an internal and test
+boundary. It is not public API.
+
+The shared stage profile (amath `docs/stage-contract.adoc`) is not published
+yet. When it is, this document will reference it and keep only the rules that
+are specific to LaTeX.
+
+== Reference implementation
+
+The behaviour to reproduce is the LaTeX path of Plurimath at one fixed commit.
+`scripts/oracle/pins.yml` records it:
+
+* Plurimath `e7ab4a5186c9be96f62d670574bc2c72f9365ad4`
+* plurimath-testsuite `281059b213026a54a193cb020a5816f57cabf3a8`, the source
+  for bulk capture rows in a later generation
+
+The legacy LaTeX path at that commit consists of these files:
+
+[cols="3,1,1,4"]
+|===
+|File |Bytes |Rules |Role
+
+|`lib/plurimath/latex.rb`
+|459
+|0
+|Entry class. `to_formula` runs the parser.
+
+|`lib/plurimath/latex/parser.rb`
+|1033
+|0
+|Preprocessing, then grammar, then transform.
+
+|`lib/plurimath/latex/parse.rb`
+|11744
+|35
+|Parsanol grammar. It also builds rules from symbol and constant tables at
+run time.
+
+|`lib/plurimath/base_number_prefix.rb`
+|1622
+|6
+|Hexadecimal, binary and octal number rules shared with other languages.
+
+|`lib/plurimath/latex/constants.rb`
+|5301
+|0
+|Tables the grammar reads: environments, parentheses, operators.
+
+|`lib/plurimath/latex/utility.rb`
+|4359
+|0
+|Helpers, including HTML entity encoding of the decimal marker.
+
+|`lib/plurimath/latex/transform.rb`
+|29673
+|116
+|Turns the raw tree into Plurimath formula objects.
+|===
+
+Rule counts are the number of `rule(` lines in each file. `pins.yml` also
+records the SHA-256 of each file. The grammar is data-driven: many of its
+alternatives come from Plurimath symbol tables, so a stage grammar must be
+generated from the pinned commit rather than written by hand.
+
+== Input preprocessing
+
+The public entry point owns preprocessing. The legacy steps, in order, are:
+
+. Remember every `\mbox{...}` and `\text{...}` group in the original input.
+. Decode HTML entities, then encode the whole text again with hexadecimal
+  entities. Every non-ASCII character, every newline and the characters
+  `<`, `>`, `&`, `"` and `'` become `&#x...;`.
+. Remove every space that does not follow a backslash, and every run of raw
+  newlines.
+. Replace a row break followed by a space (`\\ `) with a plain row break `\\`.
+. Turn `&#x26;` back into `&` and `&#x22;` back into `"`. The other entities
+  stay encoded.
+. Turn a backslash followed by an encoded newline (`\&#xa;`) into an escaped
+  space `\ `, unless that backslash ends a row break. Remove the remaining
+  `&#xa;`.
+. Put the remembered `\mbox` and `\text` groups back exactly as the caller
+  wrote them, including spaces and non-ASCII characters.
+
+For example, `a < b \\ c` followed by a newline and `\text{é x} é` becomes
+`a&#x3c;b\\c\text{é x}&#xe9;`.
+
+The grammar parses this preprocessed text, not the caller's input. Slice
+offsets in the raw tree point into the preprocessed text. Outside restored
+`\mbox` and `\text` groups the preprocessed text is ASCII.
+
+== Raw grammar tree
+
+The raw tree is what `Plurimath::Latex::Parse#parse` returns for the
+preprocessed text. It is made of hashes, arrays and slices:
+
+* A hash maps capture names to values. Capture names are symbols. Insertion
+  order is part of the tree.
+* An array keeps repeated captures in input order.
+* A slice is matched text with its character offset in the preprocessed text.
+  The capture records the byte offset too. The two differ only after
+  non-ASCII text inside a restored `\mbox` or `\text` group. A stage gem that
+  reports positions in the caller's text must map offsets back explicitly.
+
+One key is special. The grammar captures a matrix row break as the symbol
+`:"\\\\"`, and `Parse#parse` then renames that key to the string `"\\\\"`.
+This string key is part of the tree. A grammar format that cannot spell the
+key must emit another name and rename it back.
+
+== Decimal marker and locale
+
+The caller chooses a locale with the `locale:` option. The locale selects the
+decimal marker: `.` by default, `,` for locales such as `fr`, and the Arabic
+decimal separator `٫` (U+066B) for `ar`. The grammar matches the marker in its encoded
+form, because preprocessing has already turned non-ASCII characters into
+hexadecimal entities.
+
+The legacy grammar caches generated rules in class variables. After the first
+parse in a process, those rules keep the decimal marker of that first parse.
+The stage gem must instead behave like a fresh process for every call: one
+call, one marker, no state carried between calls. For the same reason the
+capture harness runs every row in a new process.
+
+== Errors
+
+A refusal is an input the legacy path does not accept. It is data, not a
+failure of the capture. A refusal happens at one of three stages:
+
+preprocess:: preprocessing raised an error.
+grammar:: the grammar did not match the preprocessed text.
+transform:: the grammar matched, but the transform could not build a formula.
+
+For grammar refusals the error position is part of the contract: the
+character offset in the preprocessed text where matching failed, and the
+matching byte offset. The class of the error is recorded. The wording of
+grammar messages is not part of the contract; the capture keeps only its
+first line and a SHA-256 of the full message.
+
+== Capture of legacy behaviour
+
+`scripts/oracle/capture.rb` records the legacy behaviour row by row. Each row
+names an input and its configuration. For each row it records four
+boundaries:
+
+. the caller's input and options;
+. the preprocessed text;
+. the raw grammar tree, or the grammar error;
+. the facade outcome of `Plurimath::Math.parse`: the formula objects and the
+  output of every writer (AsciiMath, LaTeX, MathML, OMML, HTML, UnicodeMath),
+  or the refusal.
+
+The formula objects are recorded by class and instance variables. That record
+is the baseline to compare against later. It does not define the stage model.
+
+=== Canonical tagged form
+
+Every captured value is written in a tagged form that keeps the differences
+the comparison needs: hash versus array, symbol versus string, key order, nil
+versus a missing key, empty string versus empty list, object class, slice text
+and offsets. Numbers keep their spelling and are never converted to floats.
+Text that is not valid UTF-8 is kept as hexadecimal bytes. Nothing is sorted.
+
+=== Row outcomes
+
+Every row ends in exactly one of four states:
+
+succeeded:: the child exited with status 0 and replied with a capture.
+refused:: the child exited with status 0 and replied with a refusal.
+timed_out:: the child was still running when the deadline passed.
+crashed:: the child exited with a non-zero status, died from a signal, or
+  wrote a reply that is not a valid capture.
+
+A timeout or crash is an incomplete capture, never a refusal. The deadline is
+measured on a monotonic clock. The end of the child's output is not the end
+of the child: the harness keeps waiting for the process to exit, and only a
+passed deadline with a live process counts as a timeout. A timed-out child and
+its process group are stopped.
+
+=== Inventory, report and resume
+
+Rows come from an inventory file such as `corpora/oracle/smoke.yaml`. Row
+identifiers must be unique. The report lists the selected identifiers and the
+count of rows in each state, and it is complete only when every selected row
+succeeded or was refused, with no missing or duplicate rows. The capture exits
+with status 0 only for a complete report.
+
+With `--checkpoint`, every finished row is appended to a JSON Lines file and
+flushed to disk before the next row starts. A later run with the same oracle,
+lock, worker, inventory and selection skips rows that succeeded or were
+refused, and runs timed-out and crashed rows again. A checkpoint from a
+different capture is rejected. A partly written last line is dropped.
+
+=== Oracle environment
+
+The oracle is a clean checkout of the pinned Plurimath commit.
+`scripts/oracle/setup.rb` installs its dependencies from the committed
+`scripts/oracle/oracle.gemfile.lock` into a bundle inside that checkout, kept
+apart from the latexmath bundle. The capture refuses to run when the checkout
+is at another commit, has local changes, or has a different lock. The report
+records the commit, the lock checksum and the worker checksum, and every row
+records the Ruby, Plurimath and Parsanol versions that produced it.
+
+The CI job `oracle-smoke` runs the harness smoke capture against the pinned
+checkout and keeps the report as a build artifact:
+
+[source,sh]
+----
+ruby scripts/oracle/setup.rb --oracle "$ORACLE_CHECKOUT"
+bundle exec ruby scripts/oracle/capture.rb --oracle "$ORACLE_CHECKOUT" \
+  --ids smoke-success,smoke-refusal --report smoke.json
+----
+
+== Open points for the model contract
+
+These are recorded here so they are not decided by accident in the syntax
+work:
+
+* which raw tree constructs become which typed model fields;
+* how preprocessing source maps are exposed on the model, if at all;
+* the parser engine default (native or Ruby) and how the selected engine is
+  reported.
