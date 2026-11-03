@@ -16,12 +16,16 @@
 require "digest"
 require "json"
 
+# bundler/setup may restart this process with exec (for example to switch
+# to the Bundler version in the lock). Duplicated descriptors do not survive
+# exec, so the stdout redirect below must come after it.
+require "bundler/setup"
+
 # Keep the protocol channel private: anything the libraries print goes to
 # stderr instead of mixing into the JSON reply.
 PROTOCOL = $stdout.dup
 $stdout.reopen($stderr)
 
-require "bundler/setup"
 require "plurimath"
 require_relative "lib/latexmath_oracle/tagged"
 
