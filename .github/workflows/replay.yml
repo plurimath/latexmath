@@ -26,6 +26,12 @@ on:
 permissions:
   contents: read
 
+# The oracle commit is a literal here (not read from a step output) so the
+# checkout ref is fixed by this file; a step checks it against pins.yml.
+env:
+  ORACLE_COMMIT: e7ab4a5186c9be96f62d670574bc2c72f9365ad4
+
+
 # An explicit bash shell runs with pipefail, so a failing capture or replay
 # fails its step through the tee.
 defaults:
@@ -51,15 +57,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read the pinned Plurimath commit
-        id: pins
+      - name: Check ORACLE_COMMIT matches scripts/oracle/pins.yml
         run: |
-          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+          pinned=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')
+          test "$pinned" = "$ORACLE_COMMIT" || { echo "ORACLE_COMMIT=$ORACLE_COMMIT but pins.yml has $pinned"; exit 1; }
 
       - uses: actions/checkout@v4
         with:
           repository: plurimath/plurimath
-          ref: ${{ steps.pins.outputs.commit }}
+          ref: ${{ env.ORACLE_COMMIT }}
           path: tmp/oracle-plurimath
           persist-credentials: false
 
@@ -140,15 +146,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read the pinned Plurimath commit
-        id: pins
+      - name: Check ORACLE_COMMIT matches scripts/oracle/pins.yml
         run: |
-          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+          pinned=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')
+          test "$pinned" = "$ORACLE_COMMIT" || { echo "ORACLE_COMMIT=$ORACLE_COMMIT but pins.yml has $pinned"; exit 1; }
 
       - uses: actions/checkout@v4
         with:
           repository: plurimath/plurimath
-          ref: ${{ steps.pins.outputs.commit }}
+          ref: ${{ env.ORACLE_COMMIT }}
           path: tmp/oracle-plurimath
           persist-credentials: false
 
