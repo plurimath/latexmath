@@ -15,7 +15,7 @@ module Latexmath
 
     ARTIFACT_DIR = File.expand_path("../../../artifacts", __dir__)
     DEFAULT_ARTIFACT_PATH = File.join(ARTIFACT_DIR, "latex.json")
-    DEFAULT_BINDINGS_PATH = File.join(ARTIFACT_DIR, "latex.ruby.bindings.json")
+    DEFAULT_BINDINGS_PATH = File.join(ARTIFACT_DIR, "latex.bindings.ruby.json")
 
     # The capture under which the declared bindings carry the legacy tree.
     TREE_CAPTURE = :latex_tree
