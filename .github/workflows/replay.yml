@@ -70,11 +70,16 @@ jobs:
           path: tmp/testsuite
           persist-credentials: false
 
-      # oracle.gemfile.lock was resolved with Bundler 4 on Ruby 4.0.
+      # oracle.gemfile.lock was resolved with Bundler 4 on Ruby 4.0. This
+      # job runs the pinned Plurimath's code (also on the default branch, by
+      # schedule or dispatch), so it installs gems without restoring or
+      # saving any cache.
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "4.0"
-          bundler-cache: true
+          bundler-cache: false
+
+      - run: bundle install
 
       - name: Install the locked oracle bundle
         run: |
@@ -147,10 +152,15 @@ jobs:
           path: tmp/oracle-plurimath
           persist-credentials: false
 
+      # This job runs the pinned Plurimath's code (also on the default
+      # branch, by schedule or dispatch), so it installs gems without
+      # restoring or saving any cache.
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "4.0"
-          bundler-cache: true
+          bundler-cache: false
+
+      - run: bundle install
 
       - name: Install the locked oracle bundle
         run: |
