@@ -1,0 +1,88 @@
+name: stage-cases
+
+# Writes the raw-tree stage-case payloads for plurimath-testsuite from the
+# pinned LaTeX stage generation (scripts/stage_cases.rb) and uploads them,
+# with the stage-gem producer block, as the stage-cases-latex artifact.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - "artifacts/**"
+      - "lib/latexmath/parser.rb"
+      - "lib/latexmath/parser/**"
+      - "latexmath.gemspec"
+      - "Gemfile"
+      - "scripts/stage_cases.rb"
+      - "spec/stage_cases/**"
+      - ".github/workflows/stage-cases.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # The testsuite generation the payloads are generated from.
+  TESTSUITE_COMMIT: 6f8bc12602e6016290179f0939b6afd518ef44df
+  SOURCE_GENERATION: "1"
+  SOURCE_DIGEST: sha256:9b362ce57706c5ca154bfc295b2037b9e626775d8a82a4557f3702c9ad2c74ba
+  # Parsanol ships a precompiled native extension for x86_64 Linux; fail
+  # instead of skipping the native-engine examples if it is missing.
+  LATEXMATH_REQUIRE_NATIVE: "1"
+
+jobs:
+  generate:
+    name: Stage cases from latex generation 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Run with the compiler and Ruby the committed artifact records, as
+      # the artifact regeneration job does.
+      - name: Use the compiler and Ruby the committed artifact records
+        run: |
+          echo "PARSANOL_VERSION=$(awk '$1 == "compiler_version" { print $2 }' artifacts/latex.checksums.txt)" >> "$GITHUB_ENV"
+          echo "ARTIFACT_RUBY=$(jq -r '.unicode_tables' artifacts/latex.json | sed -n 's/^onigmo (Ruby \(.*\))$/\1/p')" >> "$GITHUB_ENV"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.ARTIFACT_RUBY }}
+          bundler-cache: true
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath-testsuite
+          ref: ${{ env.TESTSUITE_COMMIT }}
+          path: tmp/testsuite
+          persist-credentials: false
+
+      - name: Generator specs
+        run: bundle exec rspec spec/stage_cases
+
+      - name: Generate the stage cases on the Ruby and native engines
+        run: >-
+          bundle exec ruby scripts/stage_cases.rb
+          --testsuite tmp/testsuite
+          --language latex
+          --generation "$SOURCE_GENERATION"
+          --digest "$SOURCE_DIGEST"
+          --output tmp/stage-cases
+          --report tmp/stage-cases-report.json
+          2>&1 | tee tmp/stage-cases.log
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage-cases-latex
+          path: |
+            tmp/stage-cases
+            tmp/stage-cases-report.json
+            tmp/stage-cases.log
+          if-no-files-found: error
