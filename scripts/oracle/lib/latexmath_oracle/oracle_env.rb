@@ -21,8 +21,12 @@ module LatexmathOracle
 
     attr_reader :checkout
 
-    def initialize(checkout)
+    # +pins+ and +lock+ default to the committed pins.yml and
+    # oracle.gemfile.lock; the specs pass their own.
+    def initialize(checkout, pins: nil, lock: LOCKFILE)
       @checkout = File.expand_path(checkout)
+      @pins = pins
+      @lock = lock
     end
 
     def pins
@@ -62,7 +66,7 @@ module LatexmathOracle
     def verify_lock!
       raise Error, "missing #{lockfile}; run scripts/oracle/setup.rb" unless File.exist?(lockfile)
 
-      expected = sha256(LOCKFILE)
+      expected = sha256(@lock)
       actual = sha256(lockfile)
       raise Error, "oracle lock #{actual} differs from oracle.gemfile.lock #{expected}" unless actual == expected
     end
@@ -76,7 +80,7 @@ module LatexmathOracle
       {
         "plurimath_repository" => pins.fetch("plurimath").fetch("repository"),
         "plurimath_commit" => commit,
-        "lock_sha256" => sha256(LOCKFILE),
+        "lock_sha256" => sha256(@lock),
         "worker_sha256" => Digest::SHA256.hexdigest(WORKER_SOURCES.map { |path| File.binread(path) }.join),
         "pins_sha256" => sha256(PINS),
       }

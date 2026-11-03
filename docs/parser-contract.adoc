@@ -211,7 +211,8 @@ is at another commit, has local changes, or has a different lock. The report
 records the commit, the lock checksum and the worker checksum, and every row
 records the Ruby, Plurimath and Parsanol versions that produced it.
 
-`corpora/oracle/smoke-report.json` is the report of the harness smoke run:
+The CI job `oracle-smoke` runs the harness smoke capture against the pinned
+checkout and keeps the report as a build artifact:
 
 [source,sh]
 ----
