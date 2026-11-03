@@ -139,6 +139,11 @@ jobs:
           echo "/.latexmath-oracle/" >> tmp/oracle-plurimath/.git/info/exclude
           ruby scripts/oracle/setup.rb --oracle tmp/oracle-plurimath
 
+      - name: The symbol table matches a fresh export from the pinned Plurimath
+        run: bundle exec ruby scripts/export_symbols.rb --oracle tmp/oracle-plurimath --check
+        env:
+          BUNDLE_GEMFILE: ${{ github.workspace }}/tmp/oracle-plurimath/.latexmath-oracle/Gemfile
+
       - name: Capture the sample rows from the legacy oracle
         run: >-
           bundle exec ruby scripts/oracle/capture.rb

@@ -20,6 +20,8 @@ module Latexmath
   autoload :Engine, "latexmath/parser/engine"
   autoload :Preprocessor, "latexmath/parser/preprocessor"
   autoload :RawParser, "latexmath/parser/raw_parser"
+  autoload :SourceMap, "latexmath/parser/source_map"
+  autoload :Symbols, "latexmath/symbols"
 
   @artifacts = nil
   @artifacts_lock = Mutex.new

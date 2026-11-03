@@ -18,7 +18,7 @@ module ArtifactSpecHelpers
   ENTRIES = %w[dot comma arabic].freeze
 
   def bindings_path(target)
-    File.join(ROOT, "artifacts", "latex.#{target}.bindings.json")
+    File.join(ROOT, "artifacts", "latex.bindings.#{target}.json")
   end
 
   def manifest

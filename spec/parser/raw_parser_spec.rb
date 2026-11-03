@@ -84,19 +84,44 @@ RSpec.describe Latexmath::RawParser do
   end
 
   describe "refusals" do
-    it "raises ParseError with offsets into the preprocessed text" do
+    it "raises ParseError with offsets into the caller's text" do
       expect { parse("\\frac{1}{") }.to raise_error(Latexmath::ParseError) { |e|
         expect(e).not_to be_a(Latexmath::NestingTooDeep)
         expect(e.input).to eq("\\frac{1}{")
         expect([e.char_offset, e.byte_offset]).to eq([9, 9])
+        expect(e.grammar_input).to eq("\\frac{1}{")
+        expect([e.grammar_char_offset, e.grammar_byte_offset]).to eq([9, 9])
       }
     end
 
     it "counts characters and bytes apart after non-ASCII text" do
       expect { parse("\\text{é}}") }.to raise_error(Latexmath::ParseError) { |e|
         expect(e.input).to eq("\\text{é}}")
-        expect(e.byte_offset - e.char_offset).to eq(1)
+        expect([e.char_offset, e.byte_offset]).to eq([8, 9])
+        expect(e.input[e.char_offset..]).to eq("}")
       }
+    end
+
+    # The preprocessing encodes non-ASCII text outside \\text groups as
+    # entities and drops spaces and newlines; the public position is the
+    # caller's, the grammar's stays on grammar_*.
+    {
+      "é + \\frac{1}{" => [13, 14, "&#xe9;+\\frac{1}{", 16, 16],
+      "a b c \\frac{é}{" => [15, 16, "abc\\frac{&#xe9;}{", 17, 17],
+      "\\alpha &amp; \\beta }" => [19, 19, "\\alpha&\\beta}", 12, 12],
+      "x\n\n}" => [3, 3, "x}", 1, 1],
+    }.each do |input, (char, byte, grammar, grammar_char, grammar_byte)|
+      it "maps the refusal position of #{input.inspect} back through the preprocessing" do
+        expect { parse(input) }.to raise_error(Latexmath::ParseError) { |e|
+          expect([e.input, e.char_offset, e.byte_offset]).to eq([input, char, byte])
+          expect(e.input.byteslice(0, e.byte_offset).length).to eq(e.char_offset)
+          expect([e.grammar_input, e.grammar_char_offset, e.grammar_byte_offset]).to eq([grammar, grammar_char, grammar_byte])
+        }
+      end
+    end
+
+    it "keeps the legacy US-ASCII preprocessing result at the raw boundary" do
+      expect(described_class.parse("\\alpha é", engine: :ruby).text.encoding).to eq(Encoding::US_ASCII)
     end
   end
 
@@ -139,6 +164,8 @@ RSpec.describe Latexmath::RawParser do
       deep = "#{'{' * 2000}a#{'}' * 2000}"
       expect { parse(deep) }.to raise_error(Latexmath::NestingTooDeep) { |e|
         expect([e.byte_offset, e.char_offset]).to eq([nil, nil])
+        expect([e.grammar_byte_offset, e.grammar_char_offset]).to eq([nil, nil])
+        expect(e.input).to eq(deep)
       }
     end
   end

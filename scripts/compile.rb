@@ -1,22 +1,24 @@
 # frozen_string_literal: true
 
 # grammars/latex.parg -> artifacts/latex.json (Parsanol PARG artifact)
+#                     + artifacts/latex.bindings.<target>.json
 #
 # Usage:
 #   bundle exec ruby scripts/compile.rb [--determinism]
 #
-# The bundle must provide the `parsanol` executable (the version is
-# recorded in the checksum manifest). Steps, as in amath:
+# The bundle must provide the `parsanol` executable, 1.3.131 or later
+# (earlier releases accept --bindings but emit nothing); the version is
+# recorded in the checksum manifest. Steps, as in amath:
 #   1. scripts/generate_grammar.rb --check (the .parg matches data/latex-atoms.json)
-#   2. bundle exec parsanol parg compile  -> artifacts/latex.json
+#   2. bundle exec parsanol parg compile --bindings all
+#        -> artifacts/latex.json and one declared bindings artifact per
+#           Parsanol binding target, beside it
 #   3. bundle exec parsanol parg check    (artifact matches source + compiler)
-#   4. if the grammar declares bindings: one checksummed parg-bindings
-#      artifact per Parsanol binding target beside the artifact,
-#      artifacts/latex.<target>.bindings.json, emitted with
-#      Parsanol::PARG::Artifact#bindings_artifact_json (the parsanol 1.3.130
-#      command line has no flag that writes them)
-#   5. --determinism: compile and emit again into a temporary directory and
-#      require identical bytes for every emitted file
+#   4. verify every bindings artifact: kind, checksum, target, binding
+#      version, entries, the entries' declared bindings, and pairing with
+#      the parse artifact
+#   5. --determinism: compile again into a temporary directory and require
+#      identical bytes for the parse artifact and every bindings artifact
 #   6. write artifacts/latex.checksums.txt
 # Exits nonzero on the first failing step.
 
@@ -47,44 +49,56 @@ def relative(path)
   path.delete_prefix("#{ROOT}/")
 end
 
-# The bindings artifacts beside +artifact+.
+# Parsanol::PARG::Bindings::Artifact::TARGETS, in its order.
+BINDING_TARGETS = Parsanol::PARG::Bindings::Artifact::TARGETS
+
+# The bindings artifact the compiler writes beside +artifact+ for +target+.
+def binding_path(artifact, target)
+  artifact.sub(/\.json\z/, ".bindings.#{target}.json")
+end
+
 def binding_files(artifact)
-  Dir[artifact.sub(/\.json\z/, ".*.bindings.json")].sort
+  BINDING_TARGETS.map { |target| binding_path(artifact, target) }
 end
 
 def compile!(output)
-  run!("bundle", "exec", "parsanol", "parg", "compile", GRAMMAR, "-o", output)
+  run!("bundle", "exec", "parsanol", "parg", "compile", GRAMMAR, "-o", output, "--bindings", "all")
+  missing = BINDING_TARGETS.reject { |target| File.file?(binding_path(output, target)) }
+  abort "FAILED: no bindings artifact emitted for #{missing.join(', ')}" unless missing.empty?
 end
 
-# Writes one bindings artifact per target when the grammar declares any.
-def emit_bindings!(artifact)
-  envelope = JSON.parse(File.binread(artifact))
-  return false unless envelope.fetch("entries").values.any? { |entry| Array(entry["bindings"]).any? }
+# Every bindings artifact loads with Parsanol's own verifier (kind,
+# checksum, target, binding version), pairs with the parse artifact and
+# declares exactly the parse artifact's entries and their bindings.
+def verify_bindings!(artifact)
+  parse = Parsanol::PARG::Artifact.load(artifact)
+  expected = parse.entries.to_h { |name| [name, parse.entry(name)["bindings"]] }
+  BINDING_TARGETS.each do |target|
+    path = binding_path(artifact, target)
+    bindings = Parsanol::PARG::Bindings::Artifact.from_json(File.read(path, encoding: "UTF-8"), target: target)
+    bindings.pair_with!(parse)
+    abort "FAILED: #{relative(path)} entries #{bindings.entry_names.inspect} != #{expected.keys.inspect}" unless bindings.entry_names == expected.keys
 
-  parg = Parsanol::PARG::Artifact.load(artifact)
-  Parsanol::PARG::Bindings::Artifact::TARGETS.each do |target|
-    path = artifact.sub(/\.json\z/, ".#{target}.bindings.json")
-    File.write(path, "#{parg.bindings_artifact_json(target)}\n")
+    expected.each do |name, records|
+      abort "FAILED: #{relative(path)} entry #{name} has no bindings" if Array(records).empty?
+      abort "FAILED: #{relative(path)} entry #{name} bindings differ from the parse artifact" unless bindings.bindings(name) == records
+    end
+    puts "bindings: #{relative(path)} target=#{bindings.target} version=#{bindings.binding_version} paired"
   end
-  true
 end
 
 run!(RbConfig.ruby, "scripts/generate_grammar.rb", "--check")
-binding_files(ARTIFACT).each { |f| File.delete(f) }
+# Bindings files from before the --bindings flag (latex.<target>.bindings.json).
+Dir[File.join(ROOT, "artifacts/latex.*.bindings.json")].each { |f| File.delete(f) }
 compile!(ARTIFACT)
 run!("bundle", "exec", "parsanol", "parg", "check", "--source", GRAMMAR, "--artifact", ARTIFACT)
-if emit_bindings!(ARTIFACT)
-  puts "bindings: #{binding_files(ARTIFACT).map { |f| relative(f) }.join(' ')}"
-else
-  puts "bindings: none declared -- per-target binding artifacts not emitted"
-end
+verify_bindings!(ARTIFACT)
 emitted = [ARTIFACT, *binding_files(ARTIFACT)]
 
 if determinism
   Dir.mktmpdir do |dir|
     again = File.join(dir, File.basename(ARTIFACT))
     compile!(again)
-    emit_bindings!(again)
     others = [again, *binding_files(again)]
     names = ->(list) { list.map { |f| File.basename(f) } }
     abort "FAILED: recompilation emitted #{names.call(others)}, not #{names.call(emitted)}" unless names.call(others) == names.call(emitted)

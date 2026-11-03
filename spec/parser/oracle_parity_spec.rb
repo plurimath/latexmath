@@ -73,12 +73,17 @@ RSpec.describe "raw-tree parity with the legacy oracle" do
       expect { Latexmath::RawParser.parse(input, decimal: decimal, engine: engine) }
         .to raise_error(Latexmath::ParseError) { |e|
           expect(e).not_to be_a(Latexmath::NestingTooDeep)
-          expect(e.input).to eq(pre.dig("ok", "v"))
-          expect(e.input.encoding).to eq(Encoding::UTF_8)
+          expect(e.grammar_input).to eq(pre.dig("ok", "v"))
+          expect(e.grammar_input.encoding).to eq(Encoding::UTF_8)
           # scripts/oracle/latex_worker.rb records Parsanol's failure
           # position (Parsanol::Cause#pos, a byte offset) and the character
           # offset it falls at.
-          expect([e.byte_offset, e.char_offset]).to eq([error.fetch("byte_offset"), error.fetch("char_offset")])
+          expect([e.grammar_byte_offset, e.grammar_char_offset])
+            .to eq([error.fetch("byte_offset"), error.fetch("char_offset")])
+          # The public position is in the caller's text.
+          expect(e.input).to eq(input)
+          expect(e.char_offset).to be_between(0, input.length)
+          expect(e.input.byteslice(0, e.byte_offset).length).to eq(e.char_offset)
         }
     end
   end
