@@ -18,8 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        ruby: ['3.1', '3.0', '2.7', '2.6', '2.5', '2.4']
+        ruby: ['3.2', '3.3', '3.4']
         experimental: [false]
+    env:
+      # The 0.1.x converter specs. The parser specs (spec/artifact,
+      # spec/parser) and the oracle harness specs run in their own jobs.
+      SPEC: spec/*_spec.rb
 
     steps:
       - uses: actions/checkout@master
@@ -54,6 +58,128 @@ jobs:
           echo "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin" >> %GITHUB_PATH%
 
       - run: bundle exec rake
+
+  artifact:
+    name: Grammar and artifact regeneration
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the compiler the committed artifact records
+        run: echo "PARSANOL_VERSION=$(awk '$1 == "compiler_version" { print $2 }' artifacts/latex.checksums.txt)" >> "$GITHUB_ENV"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: Regenerate the grammar, compile twice, rewrite the manifest
+        run: bundle exec ruby scripts/compile.rb --determinism
+
+      - name: Check the artifact against its source
+        run: bundle exec parsanol parg check --source grammars/latex.parg --artifact artifacts/latex.json
+
+      - name: Require the committed files to equal the regenerated ones
+        run: git diff --exit-code -- grammars artifacts
+
+  parser:
+    name: Artifact and parser specs on ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3', '3.4']
+    env:
+      # Parsanol ships a precompiled native extension for x86_64 Linux;
+      # fail instead of skipping the native-engine examples if it is missing.
+      LATEXMATH_REQUIRE_NATIVE: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - run: bundle exec rspec spec/artifact spec/parser
+
+  parity:
+    name: Raw-tree parity with the pinned Plurimath (sample)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the pinned Plurimath commit
+        id: pins
+        run: |
+          echo "commit=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath
+          ref: ${{ steps.pins.outputs.commit }}
+          path: tmp/oracle-plurimath
+          persist-credentials: false
+
+      # oracle.gemfile.lock was resolved with Bundler 4 on Ruby 4.0.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: true
+
+      - name: Install the locked oracle bundle
+        run: |
+          echo "/.latexmath-oracle/" >> tmp/oracle-plurimath/.git/info/exclude
+          ruby scripts/oracle/setup.rb --oracle tmp/oracle-plurimath
+
+      - name: Capture the sample rows from the legacy oracle
+        run: >-
+          bundle exec ruby scripts/oracle/capture.rb
+          --oracle tmp/oracle-plurimath
+          --inputs spec/parser/fixtures/oracle-sample.yaml
+          --report tmp/oracle-sample.json
+
+      - name: Replay them through the raw-tree boundary on both engines
+        run: bundle exec rspec spec/parser/oracle_parity_spec.rb
+        env:
+          LATEXMATH_ORACLE_REPORT: tmp/oracle-sample.json
+          LATEXMATH_REQUIRE_NATIVE: '1'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oracle-sample-report
+          path: tmp/oracle-sample.json
+          if-no-files-found: warn
+
+  gem:
+    name: Gem build and installed parser smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+
+      - run: gem build latexmath.gemspec
+
+      - name: Install the built gem alone and parse with it
+        run: |
+          export GEM_HOME="$RUNNER_TEMP/gems"
+          gem install --no-document ./latexmath-*.gem
+          cd "$RUNNER_TEMP"
+          ruby -e '
+            require "latexmath/parser"
+            r = Latexmath::RawParser.parse("\\frac{1}{2}", engine: :native)
+            abort "unexpected tree #{r.tree.inspect}" unless r.tree.key?(:binary)
+            abort "loaded from the checkout" unless $LOADED_FEATURES.grep(%r{/latexmath/parser\.rb\z}).first.start_with?(ENV["GEM_HOME"])
+            puts "ok #{r.engine} #{r.tree.keys.inspect} #{Latexmath.artifact_paths.first}"
+          '
 
   oracle-harness:
     name: Oracle harness specs on ruby ${{ matrix.ruby }}
