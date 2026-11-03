@@ -23,7 +23,8 @@ module Latexmath
       text = Preprocessor.call(normalized)
 
       loaded = Latexmath.artifacts
-      shape = Engine.run(loaded.parse, entry, grammar_input(text), mode, fallback: engine == :auto)
+      shape = Engine.run(loaded.parse, entry, grammar_input(text), mode,
+                         fallback: engine == :auto, source: normalized)
       bound = loaded.bindings.apply(entry, shape)
       tree = bound.fetch(Configuration::TREE_CAPTURE) do
         raise ArtifactError, "the declared bindings did not produce #{Configuration::TREE_CAPTURE}"

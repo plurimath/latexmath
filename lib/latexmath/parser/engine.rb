@@ -43,11 +43,31 @@ module Latexmath
 
     # Parses +text+ from +entry+ of the parse artifact +artifact+ on +mode+
     # and returns the parse shape. Under +fallback+ (engine: :auto) input
-    # too deep for the native engine is rerun on Ruby.
-    def run(artifact, entry, text, mode, fallback:)
+    # too deep for the native engine is rerun on Ruby. +source+ is the
+    # normalized caller input +text+ was preprocessed from; a ParseError
+    # reports its position in +source+ (and in +text+).
+    def run(artifact, entry, text, mode, fallback:, source:)
       shape, ran = run_with_fallback(artifact, entry, text, mode, fallback: fallback)
       record(ran)
       shape
+    rescue ParseError => e
+      raise in_source(e, source)
+    end
+
+    # +error+ (positioned in the grammar input) as a ParseError of the same
+    # class positioned in +source+.
+    def in_source(error, source)
+      text = error.input
+      char = error.char_offset && SourceMap.caller_char(source, text, error.char_offset)
+      byte = char && source[0, char].bytesize
+      message = error.message
+      if error.byte_offset
+        where = char ? "at character #{char} (byte #{byte})" : "at an unmapped position"
+        message = message.sub("LaTeX input rejected at", "LaTeX input rejected #{where}; preprocessed text")
+      end
+      error.class.new(message, input: source, byte_offset: byte, char_offset: char,
+                               grammar_input: text, grammar_byte_offset: error.byte_offset,
+                               grammar_char_offset: error.char_offset)
     end
 
     def run_with_fallback(artifact, entry, text, mode, fallback:)
@@ -135,7 +155,7 @@ module Latexmath
       Thread.current[LAST_ENGINE_KEY] = mode
     end
 
-    private_class_method :run_with_fallback, :native_too_deep, :run_mode, :parse_error,
+    private_class_method :in_source, :run_with_fallback, :native_too_deep, :run_mode, :parse_error,
                          :record, :too_deep_for_native_thread?
   end
 end
