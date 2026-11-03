@@ -190,6 +190,11 @@ module LatexmathOracle
     end
   end
 
+  # Every JSON document the harness writes or reads (requests, replies,
+  # checkpoint lines, reports) is generated and parsed with
+  # max_nesting: false: the raw tree and formula of nested input go deeper
+  # than JSON's default limit of 100.
+
   # Append-only JSON Lines record of completed rows, so an interrupted capture
   # can resume. Every row is written as one line and fsynced before the next
   # row starts. A trailing line without a newline is an interrupted write and
@@ -233,7 +238,7 @@ module LatexmathOracle
       complete = bytes.end_with?("\n") ? bytes : bytes[0, (bytes.rindex("\n") || -1) + 1]
       File.truncate(@path, complete.bytesize) if complete.bytesize != bytes.bytesize
 
-      lines = complete.each_line.map { |line| JSON.parse(line) }
+      lines = complete.each_line.map { |line| JSON.parse(line, max_nesting: false) }
       header = lines.shift
       if header.nil?
         @fresh = true
@@ -247,7 +252,7 @@ module LatexmathOracle
     end
 
     def write_line(data)
-      @file.write("#{JSON.generate(data)}\n")
+      @file.write("#{JSON.generate(data, max_nesting: false)}\n")
       @file.flush
       @file.fsync
     end
@@ -299,7 +304,7 @@ module LatexmathOracle
         end
 
         attempted[id] += 1
-        result = classify(row, supervisor.run(JSON.generate("row" => row)))
+        result = classify(row, supervisor.run(JSON.generate({ "row" => row }, max_nesting: false)))
         results[id] = result
         checkpoint&.record(result)
         @log&.puts("#{id}: #{result['status']} (#{result['duration_s']}s)")
@@ -336,7 +341,7 @@ module LatexmathOracle
       text = bytes.dup.force_encoding(Encoding::UTF_8)
       return nil unless text.valid_encoding?
 
-      data = JSON.parse(text)
+      data = JSON.parse(text, max_nesting: false)
       data.is_a?(Hash) ? data : nil
     rescue JSON::ParserError
       nil
@@ -390,7 +395,7 @@ module LatexmathOracle
   def write_json_atomically(path, data)
     FileUtils.mkdir_p(File.dirname(path))
     tmp = "#{path}.tmp-#{Process.pid}"
-    File.write(tmp, "#{JSON.pretty_generate(data)}\n")
+    File.write(tmp, "#{JSON.pretty_generate(data, max_nesting: false)}\n")
     File.rename(tmp, path)
   end
 end

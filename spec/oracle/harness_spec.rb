@@ -91,6 +91,26 @@ RSpec.describe "oracle capture harness" do
       expect(row["exit"]["signal"]).to eq(Signal.list.fetch("KILL"))
     end
 
+    it "captures, checkpoints and reports a reply nested deeper than JSON's default limit" do
+      checkpoint = File.join(tmp, "deep.jsonl")
+      row = capture("deep", checkpoint: checkpoint)
+      expect(row["status"]).to eq("succeeded")
+      depth = 0
+      node = row.dig("capture", "tree")
+      while node.is_a?(Hash)
+        depth += 1
+        node = node["items"].first
+      end
+      expect(depth).to eq(300)
+
+      report = File.join(tmp, "deep.json")
+      LatexmathOracle.write_json_atomically(report, runner([{ "id" => "row", "behaviour" => "deep" }],
+                                                           checkpoint: checkpoint).run)
+      expect(invocations).to eq(%w[row])
+      expect(JSON.parse(File.read(report), max_nesting: false).dig("rows", 0, "capture", "tree"))
+        .to eq(row.dig("capture", "tree"))
+    end
+
     it "records unreadable output as crashed" do
       expect(capture("garbage")).to include("status" => "crashed", "reason" => "invalid_output")
       expect(capture("unknown_status")).to include("status" => "crashed", "reason" => "invalid_output")

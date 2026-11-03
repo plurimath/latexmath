@@ -8,14 +8,14 @@ module LatexmathOracle
   # The form keeps every distinction the parity contract needs: hash versus
   # array, symbol versus string keys, key insertion order, nil versus a
   # missing key, empty string versus empty list, the class of every object,
-  # and the text plus character and byte offsets of every parser slice.
+  # and the text plus byte and character offsets of every parser slice.
   # Numbers are kept as their string spelling; nothing is sorted or
   # normalised. Strings that are not valid UTF-8 are kept as hex bytes.
   module Tagged
     module_function
 
     # +source+ is the text the slices point into (the preprocessed parser
-    # input). When given, every slice also records its byte offset.
+    # input). When given, every slice also records its character offset.
     def dump(value, source: nil)
       walk(value, source, Set.new.compare_by_identity)
     end
@@ -47,6 +47,21 @@ module LatexmathOracle
         { "t" => "bytes", "hex" => value.unpack1("H*"),
           "enc" => value.encoding.name }
       end
+    end
+
+    # +value+ as a plain UTF-8 string when its bytes are valid UTF-8, else
+    # in the tagged "bytes" form. For report fields such as error messages,
+    # which are text unless they quote input that is not valid UTF-8.
+    def text(value)
+      utf8 = value.to_s.dup.force_encoding(Encoding::UTF_8)
+      utf8.valid_encoding? ? utf8 : string(value.to_s)
+    end
+
+    # Zero-based character offset of byte offset +byte+ in +source+, read as
+    # UTF-8 whatever its encoding label (the legacy preprocessing labels an
+    # all-ASCII result US-ASCII).
+    def char_offset(source, byte)
+      source.byteslice(0, byte).force_encoding(Encoding::UTF_8).scrub.length
     end
 
     def hash(value, source, path)
@@ -91,12 +106,11 @@ module LatexmathOracle
       name.end_with?("::Slice") && value.respond_to?(:offset)
     end
 
+    # Parsanol's Slice#offset counts bytes of the grammar input on both
+    # engines, not characters.
     def slice(value, source)
-      text = value.to_s
-      node = string(text).merge("t" => "slice", "char_offset" => value.offset)
-      if source && value.offset
-        node["byte_offset"] = source[0, value.offset].bytesize
-      end
+      node = string(value.to_s).merge("t" => "slice", "byte_offset" => value.offset)
+      node["char_offset"] = char_offset(source, value.offset) if source && value.offset
       node
     end
   end

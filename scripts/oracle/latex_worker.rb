@@ -31,18 +31,30 @@ require_relative "lib/latexmath_oracle/tagged"
 
 WRITERS = %w[asciimath latex mathml omml html unicodemath].freeze
 
+# A message that quotes input which is not valid UTF-8 is cut and kept as
+# bytes (the tagged "bytes" form) instead of breaking the JSON reply.
+# Parsanol::Cause#pos is a byte offset into +source+, the grammar input.
 def error_info(error, source = nil)
+  message = error.message.to_s.b
   info = {
     "class" => error.class.name,
-    "message_first_line" => error.message.to_s.lines.first.to_s.chomp[0, 160],
-    "message_sha256" => Digest::SHA256.hexdigest(error.message.to_s),
+    "message_first_line" => LatexmathOracle::Tagged.text(first_line(message)),
+    "message_sha256" => Digest::SHA256.hexdigest(message),
   }
   cause = error.respond_to?(:parse_failure_cause) ? error.parse_failure_cause : nil
   if cause.respond_to?(:pos) && cause.pos.is_a?(Integer)
-    info["char_offset"] = cause.pos
-    info["byte_offset"] = source[0, cause.pos].bytesize if source
+    info["byte_offset"] = cause.pos
+    info["char_offset"] = LatexmathOracle::Tagged.char_offset(source, cause.pos) if source
   end
   info
+end
+
+# The first line of binary +message+, at most 160 characters when it is
+# valid UTF-8 and at most 160 bytes when it is not.
+def first_line(message)
+  line = message.lines.first.to_s.chomp
+  utf8 = line.dup.force_encoding(Encoding::UTF_8)
+  utf8.valid_encoding? ? utf8[0, 160] : line.byteslice(0, 160)
 end
 
 def with_locale(locale, &block)
@@ -64,7 +76,7 @@ def runtime
   }
 end
 
-request = JSON.parse($stdin.read)
+request = JSON.parse($stdin.read, max_nesting: false)
 row = request.fetch("row")
 input = row.fetch("input")
 configuration = row["configuration"] || {}
@@ -120,5 +132,7 @@ else
   end
 end
 
-PROTOCOL.write(JSON.generate(reply))
+# Raw trees and formulas of nested input go deeper than JSON's default
+# limit of 100.
+PROTOCOL.write(JSON.generate(reply, max_nesting: false))
 PROTOCOL.flush
