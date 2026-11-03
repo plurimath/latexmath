@@ -6,6 +6,9 @@ on:
     tags: [ v* ]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Run specs on ${{ matrix.os }} ruby ${{ matrix.ruby }}
