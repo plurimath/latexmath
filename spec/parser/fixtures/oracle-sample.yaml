@@ -1,0 +1,246 @@
+# Bounded raw-tree parity sample for spec/parser/oracle_parity_spec.rb,
+# captured from the legacy oracle by scripts/oracle/capture.rb in CI.
+#
+# Rows with ids latex-* are copied from
+#   plurimath-testsuite @ 281059b213026a54a193cb020a5816f57cabf3a8
+#   fixtures/parser-expectations.yaml sha256:22ef60184fc547150c4f525f627b2bec22d9a3c4bb52794f772cf2a2dde78b59
+# (every tenth LaTeX case in file order, and every LaTeX case that sets a
+# locale), input and configuration unchanged. The authored-* rows cover
+# preprocessing, decimal markers, row breaks, multibyte offsets and
+# refusals.
+#
+# latex-parser-3900 (a tenth case) is left out: the capture worker in
+# scripts/oracle cannot serialize its legacy tree (JSON nesting deeper
+# than 100), so it ends as a crash, not as data.
+---
+schema: latexmath-oracle-inventory/1
+language: latex
+producer: sample
+rows:
+- id: authored-frac
+  input: "\\frac{1}{2}"
+  configuration: {}
+- id: authored-multibyte-offset
+  input: é + b
+  configuration: {}
+- id: authored-matrix-row-break
+  input: "\\begin{matrix}a & b \\\\ c & d\\end{matrix}"
+  configuration: {}
+- id: authored-decimal-dot
+  input: '1.5'
+  configuration: {}
+- id: authored-decimal-comma
+  input: '1,5'
+  configuration:
+    locale: fr
+- id: authored-comma-default
+  input: '1,5'
+  configuration: {}
+- id: authored-decimal-arabic
+  input: 1٫5
+  configuration:
+    locale: ar
+- id: authored-refusal
+  input: "\\frac{1}{"
+  configuration: {}
+- id: authored-refusal-multibyte
+  input: "\\text{é}}"
+  configuration: {}
+- id: authored-power
+  input: x^2
+  configuration: {}
+- id: authored-native-mix
+  input: "\\sum_{i=1}^{n} \\frac{x_i}{\\sqrt[3]{y}} \\begin{pmatrix}1 & 2 \\\\ 3 &
+    4\\end{pmatrix}"
+  configuration: {}
+- id: authored-text-preserved
+  input: |-
+    a < b \\ c
+    \text{é x} é
+  configuration: {}
+- id: authored-entities
+  input: "&alpha;&amp;&#945;"
+  configuration: {}
+- id: authored-hex-number
+  input: "\\left( 0x1F + \\operatorname{sin} \\right)"
+  configuration: {}
+- id: authored-color-over
+  input: "{a \\over b} \\color{red} c"
+  configuration: {}
+- id: authored-backslash-newline
+  input: |-
+    a\
+    b
+  configuration: {}
+- id: authored-row-break-newline
+  input: |-
+    a\\
+    b
+  configuration: {}
+- id: authored-three-backslashes-newline
+  input: |-
+    a\\\
+    b
+  configuration: {}
+- id: authored-refusal-open-group
+  input: x_{1
+  configuration: {}
+- id: latex-parser-7
+  input: "{3}\\cos{\\beta}\n"
+  configuration: {}
+- id: latex-parser-33
+  input: '1,2'
+  configuration:
+    locale: fr
+- id: latex-parser-44
+  input: '1.2'
+  configuration:
+    locale: fr
+- id: latex-parser-57
+  input: ",2"
+  configuration:
+    locale: fr
+- id: latex-parser-69
+  input: "\\left(1{,}2\\right)"
+  configuration:
+    locale: fr
+- id: latex-parser-97
+  input: 1٫2
+  configuration:
+    locale: en
+- id: latex-parser-119
+  input: 1٫2
+  configuration:
+    locale: ar
+- id: latex-parser-130
+  input: 1&#x66b;2
+  configuration:
+    locale: ar
+- id: latex-parser-184
+  input: "\\sqrt {\\sqrt {\\left( t{3}\\right) v}}\n"
+  configuration: {}
+- id: latex-parser-381
+  input: '3x*2
+
+    '
+  configuration: {}
+- id: latex-parser-714
+  input: "\\begin{Bmatrix}-a & b \\\\ c & d \\end{Bmatrix}\n"
+  configuration: {}
+- id: latex-parser-1031
+  input: "{a} > {2}\n"
+  configuration: {}
+- id: latex-parser-1364
+  input: 'L = \vec{F} \cdot \hat{e}_{\eta} \qquad D = \vec{F} \cdot \hat{e}_{\xi}
+
+    '
+  configuration: {}
+- id: latex-parser-2277
+  input: |
+    \left(
+      \begin{array}{ccc}
+        s & 0 & 0 \\
+        0 & s & 0 \\
+        0 & 0 & s
+      \end{array}
+    \right)
+  configuration: {}
+- id: latex-parser-5846
+  input: "-\\rho \\overline{w' w'}\n"
+  configuration: {}
+- id: latex-parser-7539
+  input: "{1\\over2}(u^2 + v^2 + w^2) = {1\\over2} q^2\n"
+  configuration: {}
+- id: latex-parser-8412
+  input: |
+    \left(
+      \begin{array}{c}
+        N_{yy}\\
+        N_{xx}\\
+        N_{xy}\\
+        M_{xx}\\
+        M_{yy}\\
+        M_{xy}
+      \end{array}
+    \right)
+  configuration: {}
+- id: latex-parser-8965
+  input: |
+    \left(
+      \begin{array}{cc}
+        {\displaystyle - \frac{\partial^2 w}{\partial x^2}}   &
+        {\displaystyle - \frac{\partial^2 w}{\partial x \partial y}}   \\[3mm]
+        {\displaystyle - \frac{\partial^2 w}{\partial x \partial y}}    &
+        {\displaystyle - \frac{\partial^2 w}{\partial y^2}}
+      \end{array}
+    \right)
+  configuration: {}
+- id: latex-parser-9612
+  input: 'Q = \sum_{i=1}^n \:  j_i \: w^f_i \: Q^s_i
+
+    '
+  configuration: {}
+- id: latex-parser-9998
+  input: 'x * X > 0
+
+    '
+  configuration: {}
+- id: latex-parser-10268
+  input: "\\bf{y^\\prime} = \\bf{\\eta}\n"
+  configuration: {}
+- id: latex-parser-11403
+  input: "((1,,,,),(,2,,0,),(,,,3,),(,0,,ddots,),(,,,,n))\n"
+  configuration: {}
+- id: latex-parser-11874
+  input: "\\bar{\\bar{\\tau}}\n"
+  configuration: {}
+- id: latex-parser-12193
+  input: "\\nabla  \\times  \\psi = \\vec{q}\n"
+  configuration: {}
+- id: latex-parser-12412
+  input: "\\vec{q} \\cdot \\hat{n}\n"
+  configuration: {}
+- id: latex-parser-12734
+  input: "\\varepsilon  =  \\frac{\\partial u}{\\partial x}\n"
+  configuration: {}
+- id: latex-parser-13403
+  input: |
+    c = \left(
+          \begin{array}{cc}
+            {\displaystyle - \frac{\partial^2 w}{\partial x^2} } &
+            {\displaystyle - \frac{\partial^2 w}{\partial x \partial y} } \\
+            [2mm]{\displaystyle - \frac{\partial^2 w}{\partial x \partial y} } &
+            {\displaystyle - \frac{\partial^2 w}{\partial y^2} }
+          \end{array}
+        \right)
+  configuration: {}
+- id: latex-parser-13954
+  input: |
+    f = \bf{F}_{t} \:
+    \mbfit{F}^{t} \:
+    \mathrm{F}_{t} \:
+    \left(
+      \begin{array}{c}
+        n_x \\
+        n_y
+      \end{array}
+    \right)
+  configuration: {}
+- id: latex-parser-14516
+  input: "\\sin{10}_{d}^{e}\n"
+  configuration: {}
+- id: latex-latexmath-aggregator-304
+  input: "\\begin{matrix}-\\end{matrix}\n"
+  configuration: {}
+- id: latex-latexmath-aggregator-847
+  input: "\\frac{x + 4}{x + \\frac{123 \\left(\\sqrt{x} + 5\\right)}{x + 4} - 8}"
+  configuration: {}
+- id: latex-latexmath-aggregator-1204
+  input: "\\sqrt[]{3}"
+  configuration: {}
+- id: latex-latexmath-aggregator-1455
+  input: "\\sum_{\\substack{1\\le i\\le n\\\\ i\\ne j}}"
+  configuration: {}
+- id: latex-metanorma-examples-107
+  input: "+_{d}\n"
+  configuration: {}
