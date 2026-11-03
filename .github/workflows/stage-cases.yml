@@ -77,6 +77,14 @@ jobs:
           --report tmp/stage-cases-report.json
           2>&1 | tee tmp/stage-cases.log
 
+      - name: Generate again and require the same bytes
+        run: |
+          bundle exec ruby scripts/stage_cases.rb \
+            --testsuite tmp/testsuite --language latex \
+            --generation "$SOURCE_GENERATION" --digest "$SOURCE_DIGEST" \
+            --output tmp/stage-cases-again > /dev/null 2>&1
+          diff -r tmp/stage-cases tmp/stage-cases-again
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

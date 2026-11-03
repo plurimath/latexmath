@@ -43,6 +43,7 @@ module LatexmathStageCases
   TESTSUITE_REPOSITORY = "https://github.com/plurimath/plurimath-testsuite"
   LANGUAGES = %w[latex].freeze
   ENGINES = %i[ruby native].freeze
+  DECIMAL = "."
   PRODUCER = "latexmath-raw"
   ARTIFACT = "artifacts/latex.json"
   CHECKSUMS = "artifacts/latex.checksums.txt"
@@ -187,7 +188,7 @@ module LatexmathStageCases
     # [outcome in payload form, the RawParser result or the ParseError] of
     # +input+ on +engine+.
     def outcome(input, engine)
-      result = Latexmath::RawParser.parse(input, engine: engine)
+      result = Latexmath::RawParser.parse(input, decimal: DECIMAL, engine: engine)
       unless result.engine == engine
         raise Error, "#{input.inspect}: asked for the #{engine} engine, #{result.engine} ran"
       end
@@ -280,6 +281,14 @@ module LatexmathStageCases
       end
     end
 
+    # Gemfile.lock is not committed in latexmath: it is the lock this run
+    # resolved, so its digest and resolved versions are recorded.
+    def lockfile(path)
+      { "path" => "Gemfile.lock", "committed" => false, "sha256" => Source.sha256(path),
+        "bundler" => Bundler::VERSION,
+        "resolved" => Bundler.load.specs.sort_by(&:name).to_h { |spec| [spec.name, spec.version.to_s] } }
+    end
+
     def dependencies
       spec = Gem::Specification.load(File.join(ROOT, "latexmath.gemspec"))
       spec.runtime_dependencies.map(&:name).sort.to_h do |name|
@@ -291,6 +300,9 @@ module LatexmathStageCases
     end
 
     def producer(testsuite:, testsuite_commit:, payload_paths:, generation_dir:, generation:, digest:)
+      dirty = git(ROOT, "status", "--porcelain", "--untracked-files=no")
+      raise Error, "the latexmath checkout has uncommitted changes:\n#{dirty}" unless dirty.empty?
+
       commit = git(ROOT, "rev-parse", "HEAD")
       lock = File.join(ROOT, "Gemfile.lock")
       raise Error, "Gemfile.lock not found; run bundle install" unless File.file?(lock)
@@ -314,7 +326,7 @@ module LatexmathStageCases
         end,
         "environment" => {
           "ruby" => { "engine" => RUBY_ENGINE, "version" => RUBY_VERSION },
-          "lockfile" => { "path" => "Gemfile.lock", "sha256" => Source.sha256(lock) },
+          "lockfile" => lockfile(lock),
           "dependencies" => dependencies,
           "compiler" => {
             "name" => "parsanol",
@@ -338,7 +350,7 @@ module LatexmathStageCases
         "semantic_boundary" => "raw-tree",
         "configuration" => {
           "parser" => "Latexmath::RawParser.parse",
-          "decimal" => ".",
+          "decimal" => DECIMAL,
           "engines" => ENGINES.map(&:to_s),
           "engine_agreement" => "required",
           "source_generation" => { "language" => "latex", "generation" => generation, "snapshot_digest" => digest },
@@ -397,7 +409,8 @@ module LatexmathStageCases
 
       diffs = Legacy.differences(row, results[:native].last)
       legacy << { "id" => row.id, "differences" => diffs } unless diffs.empty?
-      rows[row.payload] << { "id" => "#{row.id}.raw", "input" => { "str" => row.input }, "options" => {},
+      rows[row.payload] << { "id" => "#{row.id}.raw", "input" => Canonical.string(row.input),
+                             "options" => { "decimal" => DECIMAL },
                              "expected" => outcomes[:native] }
     end
     [rows, disagreements, legacy]

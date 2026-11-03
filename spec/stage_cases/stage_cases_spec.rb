@@ -133,10 +133,10 @@ RSpec.describe LatexmathStageCases do
         frac, brace = payload["cases"]
         expect(frac["id"]).to eq("latex-frac-simple.raw")
         expect(frac["input"]).to eq("str" => "\\frac{1}{2}")
-        expect(frac["options"]).to eq({})
+        expect(frac["options"]).to eq("decimal" => ".")
         expect(frac.dig("expected", "preprocessed")).to eq("str" => "\\frac{1}{2}")
         expect(frac.dig("expected", "tree", "hash", 0, 0)).to eq("sym" => "binary")
-        expect(brace).to eq("id" => "latex-stray-close-brace.raw", "input" => { "str" => "x}" }, "options" => {},
+        expect(brace).to eq("id" => "latex-stray-close-brace.raw", "input" => { "str" => "x}" }, "options" => { "decimal" => "." },
                             "expected" => { "refusal" => { "category" => "parse_error", "byte_offset" => 1 } })
 
         fragment = YAML.safe_load_file(File.join(out, "provenance-fragment.yaml"))
