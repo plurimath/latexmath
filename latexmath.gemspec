@@ -31,5 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'ox', '~> 2.13'
   spec.add_development_dependency 'equivalent-xml'
   spec.add_development_dependency 'execjs'
-  spec.add_development_dependency 'opal', '~> 1.0.3'
+  spec.add_development_dependency 'opal', '~> 1.1.1'
 end

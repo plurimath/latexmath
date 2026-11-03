@@ -31,4 +31,35 @@ RSpec.describe Latexmath::Preprocessor do
     expect(pre("a < b \\\\ c\n\\text{é x} é")).to eq("a&#x3c;b\\\\c\\text{é x}&#xe9;")
     expect(pre("\\mbox{a  b}+1")).to eq("\\mbox{a  b}+1")
   end
+
+  describe "\\text and \\mbox group search" do
+    legacy = %r(\\(?:mbox|text)\{[^}]+\})
+    alphabet = ["\\mbox{", "\\text{", "\\textbf{", "\\", "{", "}", "}}", "a", " ", "\n", "é", "mbox", "x{"].freeze
+
+    it "finds the matches of the legacy regexp on random input" do
+      rng = Random.new(541)
+      500.times do
+        input = Array.new(rng.rand(0..24)) { alphabet[rng.rand(alphabet.size)] }.join
+        found = described_class.text_groups(input).map { |range| input[range] }
+        expect(found).to eq(input.scan(legacy)), input.inspect
+        expected = legacy_call(input, legacy)
+        actual = pre(input)
+        expect([actual, actual.encoding]).to eq([expected, expected.encoding]), input.inspect
+      end
+    end
+
+    it "stays linear on many unclosed openers" do
+      input = "\\mbox{" * 20_000
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      expect(described_class.text_groups(input)).to eq([])
+      expect(Process.clock_gettime(Process::CLOCK_MONOTONIC) - started).to be < 1.0
+    end
+
+    def legacy_call(input, legacy)
+      groups = input.scan(legacy)
+      text = described_class::ENTITIES.encode(described_class::ENTITIES.decode(input), :hexadecimal)
+      text = described_class.gsub_space_and_unicodes(text)
+      text.gsub(legacy) { |_str| groups.shift }
+    end
+  end
 end

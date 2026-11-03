@@ -66,12 +66,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use the compiler the committed artifact records
-        run: echo "PARSANOL_VERSION=$(awk '$1 == "compiler_version" { print $2 }' artifacts/latex.checksums.txt)" >> "$GITHUB_ENV"
+      # The envelope records the compiler and the Ruby whose Unicode tables
+      # it was built with; rebuilding with either changed changes its bytes.
+      - name: Use the compiler and Ruby the committed artifact records
+        run: |
+          echo "PARSANOL_VERSION=$(awk '$1 == "compiler_version" { print $2 }' artifacts/latex.checksums.txt)" >> "$GITHUB_ENV"
+          echo "ARTIFACT_RUBY=$(jq -r '.unicode_tables' artifacts/latex.json | sed -n 's/^onigmo (Ruby \(.*\))$/\1/p')" >> "$GITHUB_ENV"
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4'
+          ruby-version: ${{ env.ARTIFACT_RUBY }}
           bundler-cache: true
 
       - name: Regenerate the grammar, compile twice, rewrite the manifest
