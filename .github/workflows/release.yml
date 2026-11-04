@@ -1,7 +1,7 @@
-# Based on the Cimas rubygems-release profile used by plurimath/amath, with
-# trusted publishing: no RubyGems API key is passed, so
-# metanorma/ci's rubygems-release.yml publishes through the RubyGems
-# trusted publisher configured for this repository and workflow file.
+# Based on the Cimas rubygems-release profile used by plurimath/amath.
+# The RubyGems API key is passed as before, so metanorma/ci's
+# rubygems-release.yml publishes through the API-key path. id-token: write
+# stays so a trusted publisher can replace the key later.
 name: release
 
 on:
@@ -24,4 +24,5 @@ jobs:
     with:
       next_version: ${{ github.event.inputs.next_version }}
     secrets:
+      rubygems-api-key: ${{ secrets.PLURIMATH_CI_RUBYGEMS_API_KEY }}
       pat_token: ${{ secrets.PLURIMATH_CI_PAT_TOKEN }}
