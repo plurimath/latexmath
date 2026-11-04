@@ -19,6 +19,7 @@ on:
       - "latexmath.gemspec"
       - "Gemfile"
       - "scripts/stage_cases.rb"
+      - "spec/fixtures/testsuite-pin.yml"
       - "spec/stage_cases/**"
       - ".github/workflows/stage-cases.yml"
   workflow_dispatch:
@@ -31,8 +32,11 @@ defaults:
     shell: bash
 
 env:
-  # The testsuite generation the payloads are generated from.
-  TESTSUITE_COMMIT: 6f8bc12602e6016290179f0939b6afd518ef44df
+  # The testsuite checkout is the commit pinned in
+  # spec/fixtures/testsuite-pin.yml (a step checks it). The payloads are
+  # generated from its generation 1, which every later generation keeps
+  # byte for byte.
+  TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
   SOURCE_GENERATION: "1"
   SOURCE_DIGEST: sha256:9b362ce57706c5ca154bfc295b2037b9e626775d8a82a4557f3702c9ad2c74ba
   # Parsanol ships a precompiled native extension for x86_64 Linux; fail
@@ -59,6 +63,11 @@ jobs:
         with:
           ruby-version: ${{ env.ARTIFACT_RUBY }}
           bundler-cache: true
+
+      - name: Check TESTSUITE_COMMIT matches spec/fixtures/testsuite-pin.yml
+        run: |
+          pinned=$(ruby -ryaml -e 'puts YAML.safe_load_file("spec/fixtures/testsuite-pin.yml").fetch("commit")')
+          test "$pinned" = "$TESTSUITE_COMMIT" || { echo "TESTSUITE_COMMIT=$TESTSUITE_COMMIT but the pin has $pinned"; exit 1; }
 
       - uses: actions/checkout@v4
         with:

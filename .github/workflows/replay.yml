@@ -26,6 +26,7 @@ on:
       - "scripts/normalize_shapes.rb"
       - "scripts/oracle/**"
       - "spec/parser/**"
+      - "spec/fixtures/testsuite-pin.yml"
       - ".github/workflows/replay.yml"
 
 permissions:
@@ -53,7 +54,9 @@ jobs:
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
     env:
-      TESTSUITE_COMMIT: 281059b213026a54a193cb020a5816f57cabf3a8
+      # The commit pinned in spec/fixtures/testsuite-pin.yml (a step checks
+      # it); fixtures/ is unchanged there since 281059b.
+      TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
       FIXTURES_SHA256: 22ef60184fc547150c4f525f627b2bec22d9a3c4bb52794f772cf2a2dde78b59
       # Parsanol ships a precompiled native extension for x86_64 Linux;
       # fail instead of skipping the native-engine examples if it is missing.
@@ -66,6 +69,11 @@ jobs:
         run: |
           pinned=$(ruby -ryaml -e 'puts YAML.load_file("scripts/oracle/pins.yml").dig("plurimath", "commit")')
           test "$pinned" = "$ORACLE_COMMIT" || { echo "ORACLE_COMMIT=$ORACLE_COMMIT but pins.yml has $pinned"; exit 1; }
+
+      - name: Check TESTSUITE_COMMIT matches spec/fixtures/testsuite-pin.yml
+        run: |
+          pinned=$(ruby -ryaml -e 'puts YAML.safe_load_file("spec/fixtures/testsuite-pin.yml").fetch("commit")')
+          test "$pinned" = "$TESTSUITE_COMMIT" || { echo "TESTSUITE_COMMIT=$TESTSUITE_COMMIT but the pin has $pinned"; exit 1; }
 
       - uses: actions/checkout@v4
         with:
