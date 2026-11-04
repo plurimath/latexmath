@@ -1,0 +1,107 @@
+name: corpus
+
+# Replays the plurimath-testsuite stage generation pinned in
+# spec/fixtures/testsuite-pin.yml: the testsuite's own validator checks the
+# pin, tampered copies of the pin must fail that check, and every raw-tree
+# row of the pinned generation must parse to its expected value on the Ruby
+# and native engines (scripts/replay_corpus.rb).
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# The testsuite commit is a literal here (not read from a step output) so the
+# checkout ref is fixed by this file; a step checks it against the pin.
+env:
+  TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
+  PIN: spec/fixtures/testsuite-pin.yml
+  # Parsanol ships a precompiled native extension for x86_64 Linux; fail
+  # instead of skipping the native-engine examples if it is missing.
+  LATEXMATH_REQUIRE_NATIVE: "1"
+
+jobs:
+  replay:
+    name: Pinned testsuite generation replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the compiler and Ruby the committed artifact records
+        run: |
+          echo "PARSANOL_VERSION=$(awk '$1 == "compiler_version" { print $2 }' artifacts/latex.checksums.txt)" >> "$GITHUB_ENV"
+          echo "ARTIFACT_RUBY=$(jq -r '.unicode_tables' artifacts/latex.json | sed -n 's/^onigmo (Ruby \(.*\))$/\1/p')" >> "$GITHUB_ENV"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.ARTIFACT_RUBY }}
+          bundler-cache: true
+
+      - name: Check TESTSUITE_COMMIT matches the pin
+        run: |
+          pinned=$(ruby -ryaml -e 'puts YAML.safe_load_file(ARGV[0]).fetch("commit")' "$PIN")
+          test "$pinned" = "$TESTSUITE_COMMIT" || { echo "TESTSUITE_COMMIT=$TESTSUITE_COMMIT but $PIN has $pinned"; exit 1; }
+
+      - uses: actions/checkout@v4
+        with:
+          repository: plurimath/plurimath-testsuite
+          ref: ${{ env.TESTSUITE_COMMIT }}
+          path: tmp/testsuite
+          persist-credentials: false
+
+      - name: Validate the pin with the testsuite's validator
+        run: ruby tmp/testsuite/scripts/validate-stages.rb tmp/testsuite --pin "$PIN"
+
+      - name: A wrong commit, digest or generation fails the validator
+        run: |
+          mkdir -p tmp/pins
+          tamper() {
+            ruby -ryaml -e '
+              pin = YAML.safe_load_file(ARGV[0])
+              pin[ARGV[1]] = ARGV[1] == "generation" ? Integer(ARGV[2]) : ARGV[2]
+              File.write(ARGV[3], YAML.dump(pin))
+            ' "$PIN" "$1" "$2" "tmp/pins/$3.yml"
+            if ruby tmp/testsuite/scripts/validate-stages.rb tmp/testsuite --pin "tmp/pins/$3.yml" > "tmp/pins/$3.log" 2>&1; then
+              echo "the validator accepted a pin with a wrong $1"; exit 1
+            fi
+            # The failure must be the pin's, not some other file's.
+            grep -A2 "FAIL  tmp/pins/$3.yml" "tmp/pins/$3.log" || { cat "tmp/pins/$3.log"; exit 1; }
+            echo "ok: wrong $1 rejected"
+          }
+          tamper commit 0000000000000000000000000000000000000000 commit
+          tamper snapshot_digest "sha256:$(printf '0%.0s' {1..64})" digest
+          tamper generation 1 generation-1
+          tamper generation 99 generation-99
+
+      - name: Pin and replay specs
+        run: bundle exec rspec spec/corpus
+
+      - name: Replay every raw-tree row of the pinned generation on both engines
+        run: >-
+          mkdir -p tmp/corpus &&
+          bundle exec ruby scripts/replay_corpus.rb
+          --testsuite tmp/testsuite
+          --pin "$PIN"
+          --report tmp/corpus/replay-report.json
+          2>&1 | tee tmp/corpus/replay.log
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corpus-replay
+          path: |
+            tmp/corpus
+            tmp/pins
+          if-no-files-found: warn

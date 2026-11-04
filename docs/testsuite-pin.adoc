@@ -1,0 +1,76 @@
+= The plurimath-testsuite pin
+
+The LaTeX stage corpus lives in
+https://github.com/plurimath/plurimath-testsuite[plurimath-testsuite], in
+immutable numbered generations under `stages/latex/generations/`. Each
+generation is listed, with the digest of its files, in the append-only ledger
+`generations/latex.yaml`. This gem replays exactly one of those generations,
+named in `spec/fixtures/testsuite-pin.yml`:
+
+[source,yaml]
+----
+schema: plurimath-stage/pin/1
+repository: https://github.com/plurimath/plurimath-testsuite
+commit: fac69501e826d6bc140ca02e37bd70333cefd988
+language: latex
+generation: 2
+snapshot_digest: sha256:bad80c8a703e0761e96434779ff3826506be3702025b1bd77eb4c0e74bc58dde
+----
+
+Generation 2 keeps every case of generation 1 (the legacy corpus, produced by
+Plurimath 0.11.12) byte for byte and adds a raw-tree row for each of its 139
+cases, rejections included, written by `scripts/stage_cases.rb`.
+
+== What CI checks
+
+The `corpus` workflow checks out the testsuite at the pinned commit and then:
+
+. runs the testsuite's own validator,
+  `ruby scripts/validate-stages.rb <checkout> --pin spec/fixtures/testsuite-pin.yml`,
+  which checks that the checkout is at the pinned commit, that the ledger has
+  the pinned generation with the pinned digest, and that the generation's
+  files hash to that digest;
+. runs the same validator on copies of the pin with a wrong commit, a wrong
+  digest and a wrong generation, and fails if any of them is accepted;
+. runs `spec/corpus`, which makes the same checks in
+  `scripts/replay_corpus.rb` fail on a small generated testsuite;
+. runs `scripts/replay_corpus.rb`, which repeats the pin checks and then
+  parses every row of every raw-tree payload of the generation with
+  `Latexmath::RawParser.parse` on the Ruby and the native engine. Each
+  engine's result, the preprocessed text and tree or the refusal and its byte
+  offset, must equal the row's expected value in the canonical form of the
+  testsuite's `docs/tree-parity-contract.adoc`.
+
+To run the replay locally:
+
+[source,sh]
+----
+git clone https://github.com/plurimath/plurimath-testsuite tmp/testsuite
+git -C tmp/testsuite checkout fac69501e826d6bc140ca02e37bd70333cefd988
+bundle exec ruby scripts/replay_corpus.rb --testsuite tmp/testsuite --report tmp/replay.json
+----
+
+The `replay` and `stage-cases` workflows check out the testsuite at the same
+commit and fail if their commit and the pin's differ.
+
+== Parity with the legacy parser
+
+The pinned generation's raw-tree rows were generated from the generation 1
+inputs, so replaying them checks the current grammar against the trees this
+gem produced when they were written. The comparison with the legacy parser
+itself is made by the `replay` workflow: it captures the parse tree of the
+pinned Plurimath (`scripts/oracle/pins.yml`) for every LaTeX case of the
+testsuite's `fixtures/parser-expectations.yaml` and for the rows authored in
+this repository, and requires the raw tree and the typed model built by
+`Latexmath.parse` to match it on both engines. The legacy corpus itself is
+not changed by this gem: generation 1 stays as it was imported.
+
+== Moving the pin
+
+Commit, generation and digest change together, in one change, and only to a
+generation that is already merged in the testsuite. Take the values from the
+ledger entry, update `TESTSUITE_COMMIT` in the `corpus`, `replay` and
+`stage-cases` workflows to the same commit, and let CI replay the new
+generation. A generation whose rows this gem no longer reproduces is a
+regression to fix here, or a reason for a new generation in the testsuite;
+the pin never points at a generation the gem does not match.
