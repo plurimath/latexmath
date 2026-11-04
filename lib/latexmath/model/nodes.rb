@@ -902,10 +902,12 @@ module Latexmath
     end
 
     # A catalog capture (+symbols+, +unicode_symbols+): the spelling the
-    # grammar matched. Its Unicode value and kind are read from the symbol
-    # table (lib/latexmath/model.rb).
+    # grammar matched. Its Unicode value and kind are stored, filled from
+    # the symbol table by Latexmath::Symbols.fill after construction.
     class MathSymbol < Lutaml::Model::Serializable
       attribute :spelling, :string
+      attribute :value, :string
+      attribute :kind, :string, values: %w[symbol open close]
     end
 
     # The root: one parsed formula (binding +model+), and the decimal

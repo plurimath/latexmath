@@ -1817,6 +1817,19 @@
         {
           "name": "spelling",
           "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "string"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "values": [
+            "symbol",
+            "open",
+            "close"
+          ]
         }
       ],
       "mappings": {}
