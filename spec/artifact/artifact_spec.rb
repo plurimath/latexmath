@@ -32,11 +32,13 @@ RSpec.describe "the compiled artifacts" do
     expect(parse.fresh_against?(File.read(ArtifactSpecHelpers::GRAMMAR, encoding: "UTF-8"))).to be(true)
   end
 
-  it "declares the tree capture as a raw syntax binding for every entry" do
+  it "declares the tree capture as a raw and a model binding for every entry" do
     expect(envelope["entries"].keys).to eq(ArtifactSpecHelpers::ENTRIES)
     envelope["entries"].each_value do |entry|
       expect(entry["bindings"]).to eq([{ "capture" => "latex_tree", "path" => "latex_tree",
-                                         "type" => "raw", "card" => nil, "preprocess" => nil }])
+                                         "type" => "raw", "card" => nil, "preprocess" => nil },
+                                       { "capture" => "latex_tree", "path" => "model",
+                                         "type" => "any", "card" => nil, "preprocess" => nil }])
     end
   end
 

@@ -9,8 +9,8 @@ covers input preprocessing, the raw grammar tree, decimal markers and errors.
 
 It does not define the typed language model. The gem's one public entry point
 is `Latexmath.parse(input, ...)`, and it returns the typed LaTeX model. The
-fields, types and class names of that model are defined in a later model
-contract. The raw grammar tree described here is an internal and test
+fields, types and class names of that model are defined in
+link:model-contract.adoc[the model contract]. The raw grammar tree described here is an internal and test
 boundary. It is not public API.
 
 The shared stage profile is amath
@@ -141,6 +141,13 @@ One key is special. The grammar captures a matrix row break as the symbol
 `:"\\\\"`, and `Parse#parse` then renames that key to the string `"\\\\"`.
 This string key is part of the tree. A grammar format that cannot spell the
 key must emit another name and rename it back.
+
+The grammar in this gem adds captures so that every capture holds one kind
+of value (see link:model-contract.adoc[the model contract]). The tree it
+produces is therefore not the legacy tree itself. `Latexmath::Unwrap` removes
+the added captures, using `grammars/latex.wrappers.json`, and gives the
+legacy tree back; `Latexmath::RawParser` returns both. Parity is checked on
+the unwrapped tree.
 
 == Decimal marker and locale
 
@@ -335,10 +342,8 @@ changed to make it pass.
 
 == Open points for the model contract
 
-These are recorded here so they are not decided by accident in the syntax
-work:
+The model contract settles which raw tree constructs become which typed model
+fields. These remain open:
 
-* which raw tree constructs become which typed model fields;
 * how preprocessing source maps are exposed on the model, if at all;
-* the parser engine default (native or Ruby) and how the selected engine is
-  reported.
+* how the selected engine is reported on the model.

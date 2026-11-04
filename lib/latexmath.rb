@@ -77,7 +77,10 @@ module Latexmath
     COMMANDS[limit] = [1, 'munder', {}]
   end
 
-  def self.parse(string)
+  # The 0.1.x entry point, renamed from Latexmath.parse: that name is now
+  # the typed parser (lib/latexmath/parser.rb). Under Opal, where the
+  # parser does not load, Latexmath.parse is still this method.
+  def self.legacy_parse(string)
     lxm_input = HTMLEntities.new.decode(string)
 
     # parse
@@ -85,4 +88,12 @@ module Latexmath
   end
 
   class Error < StandardError; end
+end
+
+if RUBY_ENGINE == 'opal'
+  module Latexmath
+    singleton_class.send(:alias_method, :parse, :legacy_parse)
+  end
+else
+  require_relative 'latexmath/parser'
 end

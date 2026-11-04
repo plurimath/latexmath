@@ -19,6 +19,8 @@ module Latexmath
 
     # The capture under which the declared bindings carry the legacy tree.
     TREE_CAPTURE = :latex_tree
+    # The binding target the typed model is built from.
+    MODEL_CAPTURE = :model
 
     # Capture names the PARG grammar spells differently from the legacy
     # grammar, and the key the legacy raw tree has instead. The legacy

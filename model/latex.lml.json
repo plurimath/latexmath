@@ -1,0 +1,3350 @@
+{
+  "format": "latexmath-lml/1",
+  "root": "Latexmath::Model::Document",
+  "models": [
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Args",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Base",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_functions",
+          "type": "Latexmath::Model::BinaryFunctions"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Binary",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "root",
+          "type": "string"
+        },
+        {
+          "name": "rule",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sqrt",
+          "type": "string"
+        },
+        {
+          "name": "third_value",
+          "type": "Latexmath::Model::ThirdValue"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::BinaryFunctions",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Dividend",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "items",
+          "type": "Latexmath::Model::ItemsItem",
+          "collection": {
+            "min": 0
+          }
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Divisor",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "items",
+          "type": "Latexmath::Model::ItemsItem",
+          "collection": {
+            "min": 0
+          }
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Document",
+      "attributes": [
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::LatexTree"
+        },
+        {
+          "name": "decimal",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Ending",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Environment",
+      "attributes": [
+        {
+          "name": "args",
+          "type": "Latexmath::Model::Args"
+        },
+        {
+          "name": "asterisk",
+          "type": "string"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "ending",
+          "type": "Latexmath::Model::Ending"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "options",
+          "type": "Latexmath::Model::Options"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Expression",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "items",
+          "type": "Latexmath::Model::ItemsItem",
+          "collection": {
+            "min": 0
+          }
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::FirstValue",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left",
+          "type": "string"
+        },
+        {
+          "name": "left_paren",
+          "type": "Latexmath::Model::LeftParen"
+        },
+        {
+          "name": "lparen",
+          "type": "string"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "right",
+          "type": "string"
+        },
+        {
+          "name": "right_paren",
+          "type": "Latexmath::Model::RightParen"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "rparen",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "text_list",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::IntermediateExp",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_paren",
+          "type": "Latexmath::Model::LeftParen"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "right_paren",
+          "type": "Latexmath::Model::RightParen"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::ItemsItem",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::LatexTree",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::LeftParen",
+      "attributes": [
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "lparen",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::LeftRight",
+      "attributes": [
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "left",
+          "type": "string"
+        },
+        {
+          "name": "left_paren",
+          "type": "Latexmath::Model::LeftParen"
+        },
+        {
+          "name": "right",
+          "type": "string"
+        },
+        {
+          "name": "right_paren",
+          "type": "Latexmath::Model::RightParen"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Limits",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::MathSymbol",
+      "attributes": [
+        {
+          "name": "spelling",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Options",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Over",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Power",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_functions",
+          "type": "Latexmath::Model::BinaryFunctions"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::PowerBase",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::RightParen",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "rparen",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::SecondValue",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Sequence",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Subscript",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::Supscript",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::SymbolNode",
+      "attributes": [
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "rparen",
+          "type": "string"
+        },
+        {
+          "name": "text_list",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::TableData",
+      "attributes": [
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "dividend",
+          "type": "Latexmath::Model::Dividend"
+        },
+        {
+          "name": "divisor",
+          "type": "Latexmath::Model::Divisor"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "sequence",
+          "type": "Latexmath::Model::Sequence"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::TernaryClass",
+      "attributes": [
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "ternary_functions",
+          "type": "string"
+        },
+        {
+          "name": "third_value",
+          "type": "Latexmath::Model::ThirdValue"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::ThirdValue",
+      "attributes": [
+        {
+          "name": "absent",
+          "type": "string"
+        },
+        {
+          "name": "base",
+          "type": "Latexmath::Model::Base"
+        },
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "binary_number",
+          "type": "string"
+        },
+        {
+          "name": "environment",
+          "type": "Latexmath::Model::Environment"
+        },
+        {
+          "name": "expression",
+          "type": "Latexmath::Model::Expression"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "fonts",
+          "type": "string"
+        },
+        {
+          "name": "hex_number",
+          "type": "string"
+        },
+        {
+          "name": "intermediate_exp",
+          "type": "Latexmath::Model::IntermediateExp"
+        },
+        {
+          "name": "left_right",
+          "type": "Latexmath::Model::LeftRight"
+        },
+        {
+          "name": "limits",
+          "type": "Latexmath::Model::Limits"
+        },
+        {
+          "name": "number",
+          "type": "string"
+        },
+        {
+          "name": "numeric_values",
+          "type": "string"
+        },
+        {
+          "name": "octal_number",
+          "type": "string"
+        },
+        {
+          "name": "operant",
+          "type": "string"
+        },
+        {
+          "name": "over",
+          "type": "Latexmath::Model::Over"
+        },
+        {
+          "name": "power",
+          "type": "Latexmath::Model::Power"
+        },
+        {
+          "name": "power_base",
+          "type": "Latexmath::Model::PowerBase"
+        },
+        {
+          "name": "row_break",
+          "type": "string"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        },
+        {
+          "name": "space",
+          "type": "string"
+        },
+        {
+          "name": "subscript",
+          "type": "Latexmath::Model::Subscript"
+        },
+        {
+          "name": "substack",
+          "type": "string"
+        },
+        {
+          "name": "supscript",
+          "type": "Latexmath::Model::Supscript"
+        },
+        {
+          "name": "symbol",
+          "type": "Latexmath::Model::SymbolNode"
+        },
+        {
+          "name": "symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        },
+        {
+          "name": "table_data",
+          "type": "Latexmath::Model::TableData"
+        },
+        {
+          "name": "ternary",
+          "type": "string"
+        },
+        {
+          "name": "ternary_class",
+          "type": "Latexmath::Model::TernaryClass"
+        },
+        {
+          "name": "text",
+          "type": "string"
+        },
+        {
+          "name": "three_per_em_space",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        },
+        {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
+          "name": "under_over",
+          "type": "Latexmath::Model::UnderOver"
+        },
+        {
+          "name": "underover",
+          "type": "string"
+        },
+        {
+          "name": "unicode_symbols",
+          "type": "Latexmath::Model::MathSymbol"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::UnaryFunctions",
+      "attributes": [
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "literal",
+          "type": "string"
+        },
+        {
+          "name": "unary",
+          "type": "string"
+        }
+      ],
+      "mappings": {}
+    },
+    {
+      "lml": 1,
+      "model": "Latexmath::Model::UnderOver",
+      "attributes": [
+        {
+          "name": "binary",
+          "type": "Latexmath::Model::Binary"
+        },
+        {
+          "name": "first_value",
+          "type": "Latexmath::Model::FirstValue"
+        },
+        {
+          "name": "second_value",
+          "type": "Latexmath::Model::SecondValue"
+        }
+      ],
+      "mappings": {}
+    }
+  ]
+}

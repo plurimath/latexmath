@@ -10,9 +10,16 @@ module Latexmath
   module RawParser
     # +input+: the normalized UTF-8 caller input; +text+: the grammar input
     # (Preprocessor.call); +tree+: the legacy raw tree (Hashes, Arrays and
-    # Parsanol::Slice leaves, with the row-break key restored); +engine+:
-    # the engine that produced it.
-    Result = Struct.new(:input, :text, :tree, :engine, keyword_init: true)
+    # Parsanol::Slice leaves, with the row-break key restored), which is
+    # Unwrap of +raw+; +raw+: the grammar's own tree, with the wrappers its
+    # shape normalization adds (grammars/latex.wrappers.json); +model+: the
+    # same tree as the model binding gives it, the attributes the typed
+    # model is built from; +engine+: the engine that produced it.
+    Result = Struct.new(:input, :text, :raw, :model, :engine, keyword_init: true) do
+      def tree
+        @tree ||= RawParser.restore_capture_names(Unwrap.call(raw))
+      end
+    end
 
     module_function
 
@@ -26,10 +33,10 @@ module Latexmath
       shape = Engine.run(loaded.parse, entry, grammar_input(text), mode,
                          fallback: engine == :auto, source: normalized)
       bound = loaded.bindings.apply(entry, shape)
-      tree = bound.fetch(Configuration::TREE_CAPTURE) do
-        raise ArtifactError, "the declared bindings did not produce #{Configuration::TREE_CAPTURE}"
+      raw, model = [Configuration::TREE_CAPTURE, Configuration::MODEL_CAPTURE].map do |name|
+        bound.fetch(name) { raise ArtifactError, "the declared bindings did not produce #{name}" }
       end
-      Result.new(input: normalized, text: text, tree: restore_capture_names(tree), engine: Engine.last_engine)
+      Result.new(input: normalized, text: text, raw: raw, model: model, engine: Engine.last_engine)
     end
 
     def entry_for(decimal)

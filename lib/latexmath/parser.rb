@@ -6,27 +6,49 @@ require_relative "version"
 # The LaTeX stage parser, backed by a compiled Parsanol (PARG) grammar
 # artifact generated from the pinned legacy Plurimath grammar.
 #
-# What is here is the grammar artifact, its declared syntax bindings and the
-# internal raw-tree boundary (Latexmath::RawParser) that parity replay
-# compares with the legacy Plurimath parser. The public Latexmath.parse,
-# returning the typed LaTeX model, is built on top of it later. See
-# docs/parser-contract.adoc.
+# Latexmath.parse(input, decimal:, engine:) returns the typed LaTeX model, a
+# Latexmath::Model::Document. Underneath are the grammar artifact, its
+# declared syntax bindings and the internal raw-tree boundary
+# (Latexmath::RawParser) that parity replay compares with the legacy
+# Plurimath parser. See docs/parser-contract.adoc and
+# docs/model-contract.adoc.
 #
-# This file is separate from lib/latexmath.rb, which still loads the 0.1.x
-# LaTeX-to-MathML converter.
+# lib/latexmath.rb, which still loads the 0.1.x LaTeX-to-MathML converter,
+# requires this file outside Opal.
 module Latexmath
   autoload :Artifact, "latexmath/parser/artifact"
   autoload :Configuration, "latexmath/parser/configuration"
   autoload :Engine, "latexmath/parser/engine"
+  autoload :Model, "latexmath/model"
   autoload :Preprocessor, "latexmath/parser/preprocessor"
   autoload :RawParser, "latexmath/parser/raw_parser"
   autoload :SourceMap, "latexmath/parser/source_map"
   autoload :Symbols, "latexmath/symbols"
+  autoload :Unwrap, "latexmath/parser/unwrap"
 
   @artifacts = nil
   @artifacts_lock = Mutex.new
 
   class << self
+    # Parses LaTeX math +input+ (a String, valid UTF-8 or convertible to it)
+    # into the typed model: a Model::Document whose +expression+ is the
+    # formula's tree and +decimal+ the decimal marker it was parsed with
+    # ("." , "," or "\u066B"). Input with no formula (empty, or only
+    # spaces and newlines, which the preprocessing removes) gives a
+    # Document whose expression is nil.
+    #
+    # +engine+: :auto (native when available, else Ruby), :native or :ruby.
+    # Raises ParseError (offsets into +input+), NestingTooDeep,
+    # ArgumentError, ArtifactError or EngineUnavailable.
+    def parse(input, decimal: ".", engine: :auto)
+      text = RawParser.normalize_input(input)
+      RawParser.entry_for(decimal)
+      return Model::Document.new(decimal: decimal) if Preprocessor.call(text).empty?
+
+      raw = RawParser.parse(text, decimal: decimal, engine: engine)
+      build(raw, decimal, text)
+    end
+
     # The verified, paired parse and Ruby bindings artifacts (internal).
     def artifacts
       artifact_store.fetch
@@ -53,6 +75,13 @@ module Latexmath
     end
 
     private
+
+    def build(raw, decimal, text)
+      Model::Document.new(expression: raw.model, decimal: decimal)
+    rescue SystemStackError
+      raise NestingTooDeep.new("LaTeX input nests too deeply to build its model (Ruby stack exhausted)",
+                               input: text, byte_offset: nil, char_offset: nil, grammar_input: raw.text)
+    end
 
     def artifact_store
       @artifacts_lock.synchronize do
