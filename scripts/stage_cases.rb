@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 # Writes plurimath-testsuite stage-case payloads (plurimath-stage/latex/cases/1,
-# boundary raw-tree) from one generation of the testsuite's LaTeX stage corpus.
+# boundary raw-tree or typed-model) from one generation of the testsuite's
+# LaTeX stage corpus.
 #
 #   bundle exec ruby scripts/stage_cases.rb \
 #     --testsuite PATH --language latex --generation 1 \
-#     --digest sha256:<64 hex> --output DIR [--report FILE]
+#     --digest sha256:<64 hex> --output DIR [--report FILE] \
+#     [--boundary raw-tree|typed-model]
 #
 # It verifies the generation's snapshot digest against both the ledger and
 # --digest, reads every case's id and input (rejection rows included), and
@@ -19,6 +21,16 @@
 # --report it also writes a JSON comparison of each row with the source
 # generation's legacy preprocessed text, parse_tree and refusal index; a
 # difference there is reported, never corrected, and does not fail the run.
+#
+# With --boundary typed-model it parses each input with Latexmath.parse
+# instead and writes payloads/model-<group>.yaml with row ids "<id>.model":
+# the typed model (Latexmath::Model::Document), written from the bound data
+# the model is built from (the model binding's `(any)` output) and typed by
+# the declared model attributes. Each object is {node: <model class>,
+# fields: [...]} with its set fields in declaration order; nil fields are
+# left out. A walk of the built model through its declared attributes must
+# give the same value, or the run stops. lutaml-model serialization is never
+# used. The producer block names the committed LML export (model/latex.lml.json).
 #
 # Values are written in the canonical tagged form of the testsuite's
 # docs/tree-parity-contract.adoc. Strings carry no Ruby encoding label: text
@@ -45,6 +57,11 @@ module LatexmathStageCases
   ENGINES = %i[ruby native].freeze
   DECIMAL = "."
   PRODUCER = "latexmath-raw"
+  BOUNDARIES = %w[raw-tree typed-model].freeze
+  PRODUCERS = { "raw-tree" => PRODUCER, "typed-model" => "latexmath-model" }.freeze
+  PREFIXES = { "raw-tree" => "raw", "typed-model" => "model" }.freeze
+  LML = "model/latex.lml.json"
+  LML_CHECKSUMS = "model/latex.lml.checksums.txt"
   ARTIFACT = "artifacts/latex.json"
   CHECKSUMS = "artifacts/latex.checksums.txt"
   BINDING_TARGETS = %w[ruby rs ts python].freeze
@@ -101,6 +118,69 @@ module LatexmathStageCases
         node["char_offset"] = source.byteslice(0, value.offset).force_encoding(Encoding::UTF_8).scrub.length
       end
       node
+    end
+  end
+
+  # --- typed model in canonical tagged form --------------------------------
+
+  module ModelForm
+    module_function
+
+    def model_class?(type)
+      type.is_a?(Class) && type < Lutaml::Model::Serializable
+    end
+
+    # The tagged node of +klass+ from its bound data +data+ (attribute name
+    # => plain data). +path+ names the place for error messages.
+    def node(klass, data, path = "")
+      raise Error, "#{path}/: #{klass} data is a #{data.class}, not a Hash" unless data.is_a?(Hash)
+
+      attributes = klass.attributes
+      unknown = data.keys.map(&:to_s) - attributes.keys.map(&:to_s)
+      raise Error, "#{path}/: #{klass} has no attribute #{unknown.join(', ')}" unless unknown.empty?
+
+      instance = nil
+      fields = attributes.filter_map do |name, attribute|
+        value = if attribute.derived?
+                  (instance ||= klass.new(data)).public_send(name)
+                else
+                  data.fetch(name.to_s) { data[name] }
+                end
+        next if value.nil?
+
+        [name.to_s, field(attribute, value, "#{path}/#{name}")]
+      end
+      { "node" => klass.name, "fields" => fields }
+    end
+
+    def field(attribute, value, path)
+      return value(attribute.type, value, path) unless attribute.collection?
+      raise Error, "#{path}: a collection holds a #{value.class}" unless value.is_a?(Array)
+
+      { "array" => value.each_with_index.map { |item, i| value(attribute.type, item, "#{path}/#{i}") } }
+    end
+
+    def value(type, value, path)
+      return node(type, value, path) if model_class?(type)
+      return Canonical.string(value) if type == Lutaml::Model::Type::String && value.is_a?(String)
+
+      raise Error, "#{path}: #{value.class} for a #{type} attribute"
+    end
+
+    # The same tagged form read from a built model through its declared
+    # attributes.
+    def walk(value)
+      case value
+      when Lutaml::Model::Serializable
+        fields = value.class.attributes.filter_map do |name, _attribute|
+          child = value.public_send(name)
+          [name.to_s, walk(child)] unless child.nil?
+        end
+        { "node" => value.class.name, "fields" => fields }
+      when Array then { "array" => value.map { |item| walk(item) } }
+      when String then Canonical.string(value)
+      else raise Error, "no canonical form for #{value.class} in the model"
+      end
     end
   end
 
@@ -205,6 +285,38 @@ module LatexmathStageCases
 
       [{ "refusal" => { "category" => "parse_error", "byte_offset" => e.byte_offset } }, e]
     end
+
+    # [outcome in payload form, the built Document or the ParseError] of
+    # +input+ through Latexmath.parse on +engine+. The tree is written from
+    # the bound model data and must equal a walk of the built Document.
+    def model_outcome(input, engine)
+      text = Latexmath::RawParser.normalize_input(input)
+      preprocessed = Latexmath::Preprocessor.call(text)
+      data = { "decimal" => DECIMAL }
+      unless preprocessed.empty?
+        result = Latexmath::RawParser.parse(input, decimal: DECIMAL, engine: engine)
+        unless result.engine == engine
+          raise Error, "#{input.inspect}: asked for the #{engine} engine, #{result.engine} ran"
+        end
+
+        data["expression"] = result.model
+      end
+      document = Latexmath.parse(input, decimal: DECIMAL, engine: engine)
+      tree = ModelForm.node(Latexmath::Model::Document, data)
+      unless ModelForm.walk(document) == tree
+        raise Error, "#{input.inspect}: #{engine} engine: the built model differs from its bound data"
+      end
+
+      [{ "preprocessed" => Canonical.string(preprocessed), "tree" => tree }, document]
+    rescue Latexmath::NestingTooDeep => e
+      raise Error, "#{input.inspect}: #{engine} engine: #{e.message}"
+    rescue Latexmath::ParseError => e
+      unless Latexmath.last_engine == engine
+        raise Error, "#{input.inspect}: asked for the #{engine} engine, #{Latexmath.last_engine} ran"
+      end
+
+      [{ "refusal" => { "category" => "parse_error", "byte_offset" => e.byte_offset } }, e]
+    end
   end
 
   # --- legacy comparison --------------------------------------------------------
@@ -299,7 +411,24 @@ module LatexmathStageCases
       end
     end
 
-    def producer(testsuite:, testsuite_commit:, payload_paths:, generation_dir:, generation:, digest:)
+    # The committed LML export the typed-model rows' classes are declared in.
+    def lml(commit)
+      export = JSON.parse(File.read(File.join(ROOT, LML)))
+      documents = File.readlines(File.join(ROOT, LML_CHECKSUMS), chomp: true)
+                      .map(&:split).find { |key, _| key == LML }
+      raise Error, "#{LML_CHECKSUMS} has no line for #{LML}" unless documents
+
+      checksum = "sha256:#{Source.sha256(File.join(ROOT, LML))}"
+      raise Error, "#{LML} does not match #{LML_CHECKSUMS}" unless documents[1] == checksum
+
+      { "format" => export.fetch("format"), "root" => export.fetch("root"),
+        "checksum" => checksum, "models" => export.fetch("models").size,
+        "export" => file(LATEXMATH_REPOSITORY, commit, ROOT, LML),
+        "checksums" => file(LATEXMATH_REPOSITORY, commit, ROOT, LML_CHECKSUMS) }
+    end
+
+    def producer(testsuite:, testsuite_commit:, payload_paths:, generation_dir:, generation:, digest:,
+                 boundary: "raw-tree")
       dirty = git(ROOT, "status", "--porcelain", "--untracked-files=no")
       raise Error, "the latexmath checkout has uncommitted changes:\n#{dirty}" unless dirty.empty?
 
@@ -345,11 +474,11 @@ module LatexmathStageCases
                 .merge("target" => target, "checksum" => sums.fetch("bindings").fetch(target))
             end,
           },
-          "lml" => nil,
+          "lml" => (boundary == "typed-model" ? lml(commit) : nil),
         },
-        "semantic_boundary" => "raw-tree",
+        "semantic_boundary" => boundary,
         "configuration" => {
-          "parser" => "Latexmath::RawParser.parse",
+          "parser" => boundary == "typed-model" ? "Latexmath.parse" : "Latexmath::RawParser.parse",
           "decimal" => DECIMAL,
           "engines" => ENGINES.map(&:to_s),
           "engine_agreement" => "required",
@@ -364,24 +493,33 @@ module LatexmathStageCases
   module Writer
     module_function
 
-    def group(source_rel)
-      "raw-#{File.basename(source_rel, '.yaml')}"
+    def group(source_rel, boundary = "raw-tree")
+      "#{PREFIXES.fetch(boundary)}-#{File.basename(source_rel, '.yaml')}"
     end
 
-    def payload(group, rows)
+    def payload(group, rows, boundary = "raw-tree")
+      source = group.delete_prefix("#{PREFIXES.fetch(boundary)}-")
+      description =
+        if boundary == "typed-model"
+          "Typed models (Latexmath::Model::Document) from Latexmath.parse for the rows of #{source}.yaml, " \
+            "the same on the Ruby and native engines. Each object is its model class (#{LML}) with its set " \
+            "fields in declaration order; nil fields are left out. A refusal's byte_offset is in the caller's input."
+        else
+          "Raw grammar trees from Latexmath::RawParser.parse for the rows of " \
+            "#{source}.yaml, the same on the Ruby and native engines. " \
+            "A refusal's byte_offset is in the caller's input."
+        end
       {
         "schema" => "plurimath-stage/latex/cases/1",
         "group" => group,
-        "description" => "Raw grammar trees from Latexmath::RawParser.parse for the rows of " \
-                         "#{group.delete_prefix('raw-')}.yaml, the same on the Ruby and native engines. " \
-                         "A refusal's byte_offset is in the caller's input.",
-        "boundary" => "raw-tree",
+        "description" => description,
+        "boundary" => boundary,
         "cases" => rows,
       }
     end
 
     def text(group, doc)
-      "# LaTeX raw-tree stage cases: #{group}.\n" \
+      "# LaTeX #{doc.fetch('boundary')} stage cases: #{group}.\n" \
         "# Written by scripts/stage_cases.rb in plurimath/latexmath. Do not edit.\n" \
         "# Provenance lives in this generation's provenance.yaml.\n" +
         YAML.dump(doc, line_width: -1)
@@ -392,13 +530,16 @@ module LatexmathStageCases
 
   # Runs every case on both engines. Returns [rows by source payload,
   # disagreements, legacy differences].
-  def generate(cases, log: $stderr)
+  def generate(cases, log: $stderr, boundary: "raw-tree")
+    model = boundary == "typed-model"
     rows = Hash.new { |h, k| h[k] = [] }
     disagreements = []
     legacy = []
     cases.each_with_index do |row, index|
       started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      results = ENGINES.to_h { |engine| [engine, Parse.outcome(row.input, engine)] }
+      results = ENGINES.to_h do |engine|
+        [engine, model ? Parse.model_outcome(row.input, engine) : Parse.outcome(row.input, engine)]
+      end
       log.puts format("%<n>d/%<total>d %<id>s %<s>.1fs", n: index + 1, total: cases.size, id: row.id,
                                                           s: Process.clock_gettime(Process::CLOCK_MONOTONIC) - started)
       outcomes = results.transform_values(&:first)
@@ -407,17 +548,18 @@ module LatexmathStageCases
         next
       end
 
-      diffs = Legacy.differences(row, results[:native].last)
+      diffs = model ? [] : Legacy.differences(row, results[:native].last)
       legacy << { "id" => row.id, "differences" => diffs } unless diffs.empty?
-      rows[row.payload] << { "id" => "#{row.id}.raw", "input" => Canonical.string(row.input),
+      rows[row.payload] << { "id" => "#{row.id}.#{PREFIXES.fetch(boundary)}", "input" => Canonical.string(row.input),
                              "options" => { "decimal" => DECIMAL },
                              "expected" => outcomes[:native] }
     end
     [rows, disagreements, legacy]
   end
 
-  def run(testsuite:, language:, generation:, digest:, output:, report: nil, log: $stderr)
+  def run(testsuite:, language:, generation:, digest:, output:, report: nil, log: $stderr, boundary: "raw-tree")
     raise Error, "unsupported language #{language.inspect} (#{LANGUAGES.join(', ')})" unless LANGUAGES.include?(language)
+    raise Error, "unknown boundary #{boundary.inspect} (#{BOUNDARIES.join(', ')})" unless BOUNDARIES.include?(boundary)
     raise Error, "the native engine is not available" unless Latexmath::Engine.native_available?
 
     testsuite = File.expand_path(testsuite)
@@ -426,7 +568,7 @@ module LatexmathStageCases
     cases = Source.cases(dir, payload_paths)
     log.puts "#{cases.size} cases from #{payload_paths.size} payloads of #{language} generation #{generation}"
 
-    rows, disagreements, legacy = generate(cases, log: log)
+    rows, disagreements, legacy = generate(cases, log: log, boundary: boundary)
     summary = { "cases" => cases.size, "engine_disagreements" => disagreements,
                 "legacy_differences" => legacy }
     write_report(report, summary) if report
@@ -435,11 +577,11 @@ module LatexmathStageCases
                                 "#{disagreements.map { |d| d['id'] }.join(', ')}"
     end
 
-    payloads = write_payloads(output, payload_paths, rows)
+    payloads = write_payloads(output, payload_paths, rows, boundary)
     producer = Identity.producer(testsuite: testsuite, testsuite_commit: testsuite_commit,
                                  payload_paths: payload_paths, generation_dir: dir,
-                                 generation: generation, digest: digest)
-    fragment = { "producers" => { PRODUCER => producer }, "payloads" => payloads }
+                                 generation: generation, digest: digest, boundary: boundary)
+    fragment = { "producers" => { PRODUCERS.fetch(boundary) => producer }, "payloads" => payloads }
     File.write(File.join(output, "provenance-fragment.yaml"), YAML.dump(fragment, line_width: -1))
     log.puts "wrote #{payloads.size} payloads, #{payloads.sum { |p| p['rows'].size }} rows; " \
              "#{legacy.size} rows differ from the legacy generation"
@@ -451,17 +593,17 @@ module LatexmathStageCases
     File.write(path, "#{JSON.pretty_generate(summary, max_nesting: false)}\n")
   end
 
-  def write_payloads(output, payload_paths, rows)
+  def write_payloads(output, payload_paths, rows, boundary = "raw-tree")
     dir = File.join(output, "payloads")
     FileUtils.mkdir_p(dir)
     payload_paths.filter_map do |rel|
       next if rows[rel].empty?
 
-      group = Writer.group(rel)
+      group = Writer.group(rel, boundary)
       path = File.join(dir, "#{group}.yaml")
-      File.write(path, Writer.text(group, Writer.payload(group, rows[rel])))
+      File.write(path, Writer.text(group, Writer.payload(group, rows[rel], boundary)))
       { "path" => "payloads/#{group}.yaml", "bytes" => File.size(path), "sha256" => Source.sha256(path),
-        "producer" => PRODUCER, "source" => { "relation" => "generated", "file" => nil },
+        "producer" => PRODUCERS.fetch(boundary), "source" => { "relation" => "generated", "file" => nil },
         "rows" => rows[rel].map { |r| r["id"] } }
     end.sort_by { |p| p["path"].b }
   end
@@ -476,6 +618,7 @@ module LatexmathStageCases
       o.on("--digest DIGEST") { |v| options[:digest] = v }
       o.on("--output DIR") { |v| options[:output] = v }
       o.on("--report FILE") { |v| options[:report] = v }
+      o.on("--boundary NAME", BOUNDARIES) { |v| options[:boundary] = v }
     end.parse!(argv)
     missing = %i[testsuite generation digest output] - options.keys
     raise OptionParser::MissingArgument, missing.map { |k| "--#{k}" }.join(", ") unless missing.empty?
