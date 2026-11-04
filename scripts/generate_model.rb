@@ -93,12 +93,12 @@ classes.sort.each do |cname, (capture, keys)|
 end
 out << <<~RUBY
     # A catalog capture (+symbols+, +unicode_symbols+): the spelling the
-    # grammar matched. Its Unicode value and kind are stored, filled from
-    # the symbol table by Latexmath::Symbols.fill after construction.
+    # grammar matched. Its Unicode value and kind are derived from the
+    # spelling through the symbol table (lib/latexmath/model.rb).
     class #{SYMBOL_CLASS} < Lutaml::Model::Serializable
       attribute :spelling, :string
-      attribute :value, :string
-      attribute :kind, :string, values: %w[symbol open close]
+      attribute :value, :string, method: :symbol_value
+      attribute :kind, :string, method: :symbol_kind
     end
 
     # The root: one parsed formula (binding +model+), and the decimal

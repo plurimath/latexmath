@@ -76,7 +76,7 @@ module Latexmath
     private
 
     def build(raw, decimal, text)
-      Symbols.fill(Model::Document.new(expression: raw.model, decimal: decimal))
+      Model::Document.new(expression: raw.model, decimal: decimal)
     rescue SystemStackError
       raise NestingTooDeep.new("LaTeX input nests too deeply to build its model (Ruby stack exhausted)",
                                input: text, byte_offset: nil, char_offset: nil, grammar_input: raw.text)

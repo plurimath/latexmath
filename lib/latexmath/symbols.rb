@@ -39,29 +39,6 @@ module Latexmath
         Entry.new(spelling: key, value: key, mathml: nil, kind: "symbol", plurimath_class: "Symbol").freeze
     end
 
-    # Fills +value+ and +kind+ of every Model::MathSymbol under +node+ (a
-    # model instance) from its spelling (#resolve). Iterative over the
-    # declared attributes; returns +node+.
-    def fill(node)
-      stack = [node]
-      until stack.empty?
-        current = stack.pop
-        if current.is_a?(Model::MathSymbol)
-          entry = resolve(current.spelling.to_s)
-          current.value = entry.value
-          current.kind = entry.kind
-        end
-        current.class.attributes.each_key do |name|
-          child = current.public_send(name)
-          case child
-          when Lutaml::Model::Serializable then stack << child
-          when ::Array then child.each { |c| stack << c if c.is_a?(Lutaml::Model::Serializable) }
-          end
-        end
-      end
-      node
-    end
-
     def size
       table[:entries].size
     end

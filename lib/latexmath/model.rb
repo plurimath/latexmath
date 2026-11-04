@@ -20,13 +20,23 @@ require_relative "model/nodes"
 
 module Latexmath
   module Model
-    # +value+ and +kind+ of a symbol are stored attributes, filled by
-    # Latexmath::Symbols.fill once the tree is built (see Latexmath.parse).
+    # +value+ and +kind+ of a symbol are derived attributes: they are
+    # exported (and serialized) but never part of the bound data.
     class MathSymbol
       # The Symbols::Entry for #spelling, looked up from its spelling,
       # stripped, as in the legacy transform.
       def entry
         Latexmath::Symbols.resolve(spelling.to_s)
+      end
+
+      # The Unicode text the symbol stands for.
+      def symbol_value
+        spelling && entry.value
+      end
+
+      # "symbol", "open" or "close".
+      def symbol_kind
+        spelling && entry.kind
       end
     end
   end

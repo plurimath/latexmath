@@ -1824,12 +1824,7 @@
         },
         {
           "name": "kind",
-          "type": "string",
-          "values": [
-            "symbol",
-            "open",
-            "close"
-          ]
+          "type": "string"
         }
       ],
       "mappings": {}
