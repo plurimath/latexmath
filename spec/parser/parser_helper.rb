@@ -28,7 +28,11 @@ module ParserSpecHelpers
     case value
     when Array then value.map { |v| model_data(v) }
     when Lutaml::Model::Serializable
-      value.class.attributes.keys.each_with_object({}) do |name, h|
+      # Derived attributes (MathSymbol's value and kind) are computed from
+      # the bound spelling, so they are not part of the bound data.
+      value.class.attributes.each_with_object({}) do |(name, attribute), h|
+        next if attribute.derived?
+
         v = value.public_send(name)
         h[name] = model_data(v) unless v.nil?
       end
