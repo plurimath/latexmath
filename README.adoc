@@ -1,36 +1,147 @@
-## DEPRECATION NOTICE: This repository is no longer maintained. Please visit link:https://github.com/plurimath/plurimath[Plurimath] for the latest updates and features.
-
-= latexmath
+= Latexmath: LaTeX math parser for Ruby
 
 image:https://img.shields.io/gem/v/latexmath.svg["Gem Version", link="https://rubygems.org/gems/latexmath"]
-image:https://github.com/metanorma/latexmath/workflows/test/badge.svg["Build Status", link="https://github.com/metanorma/latexmath/actions?workflow=test"]
-image:https://codeclimate.com/github/metanorma/latexmath/badges/gpa.svg["Code Climate", link="https://codeclimate.com/github/metanorma/latexmath"]
-image:https://img.shields.io/github/issues-pr-raw/metanorma/latexmath.svg["Pull Requests", link="https://github.com/metanorma/latexmath/pulls"]
-image:https://img.shields.io/github/commits-since/metanorma/latexmath/latest.svg["Commits since latest",link="https://github.com/metanorma/latexmath/releases"]
+image:https://github.com/plurimath/latexmath/actions/workflows/test.yml/badge.svg["Build Status", link="https://github.com/plurimath/latexmath/actions/workflows/test.yml"]
 
 == Purpose
 
-Ruby gem to translate LaTeX math into MathML.
-The MathML is supposed to be compliant with output of LaTeXML.
+Latexmath parses LaTeX math, the notation inside `$...$` or a `\[...\]`
+display, into a typed model of the formula. It reads the LaTeX that
+https://github.com/plurimath/plurimath[Plurimath] reads, with the same
+grammar, and is built for Plurimath to use for LaTeX input
+(https://github.com/plurimath/plurimath/issues/531[plurimath/plurimath#531]).
 
-It also works in reverse by translating MathML into LaTeX code.
+The model records the structure of the formula: which symbols, fractions,
+roots, sub- and superscripts, matrices, environments and brackets it
+contains, and how they nest. Your code decides what to do with it, such as
+rendering, converting or analysing it. Latexmath does not write MathML or any
+other output format; Plurimath does that.
 
-The LaTeX math syntax supports `amsmath`, `array`, `split` and `pmatrix` packages.
+Version 1.0.0 replaces the 0.1.x gem, which converted LaTeX to MathML. See
+link:CHANGELOG.md[the changelog] for what changed and how to move.
 
-NOTE: Bolding, symbols like `\backepsilon`, equation alignment, are all supported.
+== Installation
+
+Add it to your `Gemfile`:
+
+[source,ruby]
+----
+gem "latexmath", "~> 1.0"
+----
+
+Latexmath needs Ruby 3.2 or later. Its runtime dependencies are
+https://github.com/parsanol/parsanol-ruby[Parsanol],
+https://github.com/lutaml/lutaml-model[LutaML Model] and HTMLEntities. It
+does not load Plurimath.
 
 == Usage
 
 [source,ruby]
--------------
+----
 require "latexmath"
 
-latex = "$$f_i =  \sum_{j=1}^2 s_{ij} n_j \quad {\rm for} \quad i = 1,2$$"
-mathml = Latexmath.legacy_parse(latex).to_mathml
--------------
+doc = Latexmath.parse("x^2")
+power = doc.expression.power
+power.symbols.spelling   # => "x"
+power.supscript.number   # => "2"
+----
 
-`Latexmath.parse(input, decimal: ".", engine: :auto)` parses LaTeX math into
-the typed LaTeX model, a `Latexmath::Model::Document`, as Plurimath reads it.
-See link:docs/model-contract.adoc[the model contract]. The 0.1.x converter
-entry point above was called `Latexmath.parse` before; it is now
-`Latexmath.legacy_parse` and goes away in 1.0.0.
+`Latexmath.parse` returns a `Latexmath::Model::Document`. Its `expression`
+holds the formula and `decimal` the decimal marker it was parsed with. Input
+with no formula, such as an empty string, gives a document whose `expression`
+is nil.
+
+The model classes are plain LutaML Model classes, generated from the grammar:
+each named part of the grammar is a class with one attribute per part it can
+contain. Symbols such as `\alpha` are `Latexmath::Model::MathSymbol` objects.
+A symbol keeps the text the grammar matched as `spelling` and gives its
+Unicode text and kind (`symbol`, `open` or `close`):
+
+[source,ruby]
+----
+symbol = Latexmath.parse("\\alpha").expression.symbols
+symbol.spelling # => "alpha"
+symbol.value    # => "α"
+symbol.kind     # => "symbol"
+----
+
+Numbers keep their digits and decimal marker as written. A dot is the
+decimal marker unless you say otherwise; a comma and the Arabic decimal
+separator are also supported:
+
+[source,ruby]
+----
+Latexmath.parse("1,5", decimal: ",")
+Latexmath.parse("1٫5", decimal: "٫")
+----
+
+The rules for each model class are in link:docs/model-contract.adoc[the
+model contract], and the accepted syntax and the preprocessing of the input
+in link:docs/parser-contract.adoc[the parser contract].
+
+== Errors
+
+Input that is not valid LaTeX math raises `Latexmath::ParseError`, which
+tells you where the parser gave up, as a position in the text you passed:
+
+[source,ruby]
+----
+begin
+  Latexmath.parse("é}")
+rescue Latexmath::ParseError => e
+  e.char_offset # => 1, position in characters
+  e.byte_offset # => 2, position in UTF-8 bytes
+end
+----
+
+The parser first rewrites the input as Plurimath does: it removes spaces and
+newlines and writes non-ASCII characters as HTML entities. The place the
+grammar stops is therefore a position in text you did not write. The offsets are mapped back to your input; a position
+inside rewritten text points at the start of the text it came from. The
+position in the rewritten text is also available, as `grammar_char_offset`
+and `grammar_byte_offset`.
+
+Every error Latexmath raises on purpose is a `Latexmath::Error`, except
+`ArgumentError` for an invalid argument such as an unknown engine or decimal
+marker.
+
+== Engines
+
+Latexmath runs on Parsanol's native engine where its extension is available,
+and on its pure Ruby engine elsewhere. Both give the same results. You can
+choose one with `engine: :native` or `engine: :ruby`. Asking for the native
+engine where it cannot run raises `Latexmath::EngineUnavailable` instead of
+quietly using Ruby. `Latexmath.last_engine` tells you which engine handled
+the last call on the current thread.
+
+The native engine has a recursion limit. With the default `engine: :auto`,
+input that nests deeper than that is parsed with the Ruby engine; with
+`engine: :native` it raises `Latexmath::NestingTooDeep`, a kind of
+`Latexmath::ParseError` that has no offsets, because the input may well be
+valid.
+
+== Testing against the Plurimath testsuite
+
+The LaTeX cases of
+https://github.com/plurimath/plurimath-testsuite[plurimath-testsuite] are
+kept there as numbered, immutable generations. `spec/fixtures/testsuite-pin.yml`
+names the exact commit, generation and digest this gem is tested against, and
+CI replays every raw-tree row of that generation on both engines. CI also
+compares the parse tree with the one the pinned Plurimath release produces
+for every LaTeX case of the testsuite. See
+link:docs/testsuite-pin.adoc[the testsuite pin].
+
+== Relation to Plurimath
+
+Latexmath is one of the language gems split out of Plurimath, with
+https://github.com/plurimath/amath[amath] for AsciiMath and
+https://github.com/plurimath/unicodemath[unicodemath] for UnicodeMath. The
+plan and its progress are tracked in
+https://github.com/plurimath/plurimath/issues/541[plurimath/plurimath#541].
+Plurimath is to turn the model into its own formula objects and write the
+output formats.
+
+== License
+
+Copyright Ribose Inc. Licensed under the BSD 2-Clause License; see
+link:LICENSE.md[].
