@@ -26,5 +26,11 @@ NOTE: Bolding, symbols like `\backepsilon`, equation alignment, are all supporte
 require "latexmath"
 
 latex = "$$f_i =  \sum_{j=1}^2 s_{ij} n_j \quad {\rm for} \quad i = 1,2$$"
-mathml = Latexmath.parse(latex).to_mathml
+mathml = Latexmath.legacy_parse(latex).to_mathml
 -------------
+
+`Latexmath.parse(input, decimal: ".", engine: :auto)` parses LaTeX math into
+the typed LaTeX model, a `Latexmath::Model::Document`, as Plurimath reads it.
+See link:docs/model-contract.adoc[the model contract]. The 0.1.x converter
+entry point above was called `Latexmath.parse` before; it is now
+`Latexmath.legacy_parse` and goes away in 1.0.0.

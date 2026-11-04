@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'htmlentities', '~> 4.3'
+  spec.add_dependency 'lutaml-model', '~> 0.8', '>= 0.8.162'
   spec.add_dependency 'parsanol', '~> 1.3', '>= 1.3.131'
   spec.add_dependency 'ox', '~> 2.13'
   spec.add_development_dependency 'equivalent-xml'

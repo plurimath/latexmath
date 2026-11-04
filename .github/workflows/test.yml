@@ -84,8 +84,14 @@ jobs:
       - name: Check the artifact against its source
         run: bundle exec parsanol parg check --source grammars/latex.parg --artifact artifacts/latex.json
 
+      - name: The model classes match the normalized grammar
+        run: ruby scripts/generate_model.rb --check
+
+      - name: Export and verify the model's LML documents
+        run: bundle exec ruby scripts/verify_lml.rb
+
       - name: Require the committed files to equal the regenerated ones
-        run: git diff --exit-code -- grammars artifacts
+        run: git diff --exit-code -- grammars artifacts lib/latexmath/model model
 
   parser:
     name: Artifact and parser specs on ruby ${{ matrix.ruby }}
@@ -107,7 +113,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - run: bundle exec rspec spec/artifact spec/parser
+      - run: bundle exec rspec spec/artifact spec/parser spec/model
 
   parity:
     name: Raw-tree parity with the pinned Plurimath (sample)
@@ -187,7 +193,9 @@ jobs:
             r = Latexmath::RawParser.parse("\\frac{1}{2}", engine: :native)
             abort "unexpected tree #{r.tree.inspect}" unless r.tree.key?(:binary)
             abort "loaded from the checkout" unless $LOADED_FEATURES.grep(%r{/latexmath/parser\.rb\z}).first.start_with?(ENV["GEM_HOME"])
-            puts "ok #{r.engine} #{r.tree.keys.inspect} #{Latexmath.artifact_paths.first}"
+            d = Latexmath.parse("\\frac{1}{2}", engine: :native)
+            abort "unexpected model #{d.inspect}" unless d.expression.binary.binary.literal == "frac"
+            puts "ok #{r.engine} #{r.tree.keys.inspect} #{d.class} #{Latexmath.artifact_paths.first}"
           '
 
   oracle-harness:

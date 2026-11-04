@@ -3,7 +3,8 @@ name: replay
 # Full raw-tree replay: captures the legacy oracle for every LaTeX case of
 # the pinned plurimath-testsuite fixtures (one fresh process per case, so in
 # shards) and for the authored rows, and replays every capture through
-# spec/parser/oracle_parity_spec.rb on the Ruby and native engines.
+# spec/parser/oracle_parity_spec.rb on the Ruby and native engines: the
+# unwrapped raw tree, and the typed model built by Latexmath.parse.
 
 on:
   workflow_dispatch:
@@ -16,9 +17,13 @@ on:
       - "grammars/**"
       - "lib/latexmath/parser.rb"
       - "lib/latexmath/parser/**"
+      - "lib/latexmath/model.rb"
+      - "lib/latexmath/model/**"
+      - "lib/latexmath/symbols.rb"
       - "corpora/oracle/**"
       - "scripts/compile.rb"
       - "scripts/generate_grammar.rb"
+      - "scripts/normalize_shapes.rb"
       - "scripts/oracle/**"
       - "spec/parser/**"
       - ".github/workflows/replay.yml"

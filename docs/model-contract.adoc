@@ -1,0 +1,125 @@
+= LaTeX model contract
+:toc:
+
+== Scope
+
+`Latexmath.parse(input, decimal: ".", engine: :auto)` returns a
+`Latexmath::Model::Document`. This document says how that model is derived
+from the grammar, how it is built, and how it is checked. The syntax side,
+including preprocessing, errors and the legacy raw tree, is in
+link:parser-contract.adoc[the parser contract].
+
+== Shape normalization of the grammar
+
+Under Parslet's flattening rules one capture name of the legacy grammar can
+hold text, a hash, a list or nil, depending on which alternative matched. A
+typed model needs one type per field. So `scripts/generate_grammar.rb` first
+rewrites the exported grammar so that every capture holds one kind of value,
+and then emits `grammars/latex.parg`. The rewrite only adds captures or spells
+a construct in an equivalent way, so the grammar accepts exactly the same
+inputs.
+
+The rules N1 to N7 come from `scripts/normalize_shapes.rb`, shared with the
+other stage gems. LaTeX needs four more, applied before them:
+
+[cols="1,4"]
+|===
+|Rule |Rewrite
+
+|N8 catalog text
+|The text of a `symbols` or `unicode_symbols` capture, which the legacy
+transform looks up in the symbol table, is captured as `spelling`. The model
+holds a `MathSymbol` there.
+
+|N9 empty list
+|A capture of text that the legacy grammar writes as an empty list when
+nothing matched (`(*x) as c`, also through a rule) holds an empty string
+instead: `*x` is written `*x &*x`. Its text is captured as `text_list` (or is
+the `spelling` of N8).
+
+|N10 list site
+|A capture that holds a hash at some places and a list at others is captured
+as `items` where it holds a list.
+
+|N11 named option
+|`[x] as c`, which is nil when `x` is absent, is written
+`(x / "" as absent) as c`.
+|===
+
+Generation stops if any capture is still multi-kind or can hold nil. It also
+stops if a rule that is shared by every decimal marker would normalize
+differently under one of them.
+
+`grammars/latex.wrappers.json` lists every added capture with how it unwraps:
+
+[cols="1,1,3"]
+|===
+|Capture |Kind |Legacy value
+
+|`literal`, `literal_<n>` |text |the wrapped text
+|`spelling`, `text_list` |text_list |the text, or `[]` when it is empty
+|`items` |items |the list
+|`absent` |nil |nil
+|===
+
+`Latexmath::Unwrap` replaces each added capture by that value and folds the
+parts with Parsanol's own `merge_fold` and `flatten_repetition`, so it gives
+back the legacy tree exactly. It serves the raw-tree boundary and parity
+replay only.
+
+`grammars/latex.normalized-rules.json` holds the normalized rules of the
+`dot` entry, from which the model classes are generated.
+
+== Model classes
+
+`scripts/generate_model.rb` writes `lib/latexmath/model/nodes.rb` from the
+capture shapes of the normalized rules:
+
+* a capture that holds a hash becomes a class named after it, with one
+  attribute per key;
+* a capture that holds a list becomes a class `<Capture>Item` for its
+  elements, and the attribute is a collection of it;
+* a capture that holds text is a `:string` attribute;
+* a capture whose only key is `spelling` is a `MathSymbol`.
+
+An attribute has the same name and type wherever it occurs. The matrix row
+break, which the legacy tree keys as `"\\"`, is the attribute `row_break`.
+The classes are plain LutaML Model classes: no union types, no cast hooks.
+`Document` has `expression`, the formula's tree, and `decimal`, the decimal
+marker the input was parsed with. Numbers keep their digits and marker as
+written.
+
+`MathSymbol` has the attribute `spelling`, the text the grammar matched. Its
+`value` (Unicode text) and `kind` (`symbol`, `open` or `close`) are read from
+`data/latex-symbols.json` for the spelling, stripped, as in the legacy
+transform. A spelling the table lacks stands for itself, kind `symbol`.
+
+== Construction
+
+Each grammar entry declares two bindings on the tree capture:
+
+----
+latex_tree -> latex_tree (raw)
+latex_tree -> model (any)
+----
+
+The raw binding gives the tree with slices and offsets. The model binding
+gives the same tree as plain data, and `Document.new(expression: ...)` builds
+the whole typed tree from the declared attribute types. No code walks the
+parse tree.
+
+Input with no formula (empty, or only spaces and newlines, which the
+preprocessing removes) returns a `Document` whose `expression` is nil.
+
+== Checks
+
+* `ruby scripts/generate_grammar.rb --check` and
+  `ruby scripts/generate_model.rb --check` require the committed grammar,
+  wrappers, normalized rules and model classes to equal a fresh generation.
+* `bundle exec ruby scripts/verify_lml.rb` exports every model class with
+  `Lutaml::Model::Lml.export`, requires the result to equal
+  `model/latex.lml.json` and its checksums, and verifies every document.
+* The parity replay (`spec/parser/oracle_parity_spec.rb`) requires, for every
+  parsed row and on both engines, that the unwrapped tree equals the legacy
+  tree, that the model as data equals the bound data, and that the unwrapped
+  model gives the legacy tree's text.

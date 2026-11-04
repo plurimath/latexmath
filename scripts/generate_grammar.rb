@@ -35,18 +35,25 @@ require "digest"
 require "json"
 require "open3"
 require "optparse"
+require_relative "normalize_shapes"
 
 ROOT = File.expand_path("..", __dir__)
 DATA = File.join(ROOT, "data/latex-atoms.json")
 OUT = File.join(ROOT, "grammars/latex.parg")
+# The wrappers the shape normalization added (scripts/normalize_shapes.rb),
+# read by the unwrap of the raw-tree boundary and by the model generator.
+WRAPPERS_OUT = File.join(ROOT, "grammars/latex.wrappers.json")
+NORMALIZED_OUT = File.join(ROOT, "grammars/latex.normalized-rules.json")
 FORMAT = "latexmath-atoms/v1"
 
 # Decimal marker -> entry name (and rule suffix). A marker without a name
 # stops the export.
 MARKER_NAMES = { "." => "dot", "," => "comma", "\u066B" => "arabic" }.freeze
 
-# The capture that carries the legacy tree through the declared bindings.
+# The capture that carries the tree through the declared bindings, and the
+# binding target the typed model is built from.
 TREE_CAPTURE = "latex_tree"
+MODEL = "model"
 
 module Export
   module_function
@@ -184,6 +191,218 @@ module Export
   end
 end
 
+# Capture-shape normalization of the exported graph (option F): the rules of
+# scripts/normalize_shapes.rb (N1-N7), plus one LaTeX rule, run per decimal
+# marker.
+#
+#   N8 catalog text   the text of a capture the legacy transform looks up
+#                     in the symbol table (CATALOG_CAPTURES) becomes
+#                     `(x) as spelling`, so the model holds a MathSymbol
+#   N9 empty list     a capture of text that legacy writes as [] when the
+#                     text is empty (a repetition of min 0 at the top of
+#                     the capture) holds `""` instead: `*x` becomes
+#                     `*x &*x` (same language; a sequence folds the empty
+#                     repetition to ""), and the capture's text is
+#                     wrapped `(x) as text_list` (or is the spelling of N8),
+#                     whose empty text unwraps to []
+#   N10 list site     a capture that holds a node at some sites and a list
+#                     at others holds `(x) as items` at the list sites
+#   N11 named option  `[x] as c` (legacy nil when x is absent) becomes
+#                     `(x / "" as absent) as c`; absent unwraps to nil
+#
+# The export writes nodes as tuples (["as", name, expr], ["rep", min, max,
+# tag, expr], ...); ShapeNormalizer reads hash nodes ({"as" => name, "of" =>
+# expr}, {"rep" => expr, "min" => ...}). Normalization only adds captures
+# and spells repetitions differently, so the accepted language is
+# unchanged. A rule the export stores once for every marker must normalize
+# the same under each marker.
+module Shapes
+  # Legacy captures whose text the transform resolves through the symbol
+  # table (scripts/export_symbols.rb).
+  CATALOG_CAPTURES = %w[symbols unicode_symbols].freeze
+  SPELLING = "spelling"
+  TEXT_LIST = "text_list"
+  ITEMS = "items"
+  ABSENT = "absent"
+  # Wrappers added here, by unwrap kind (see ShapeNormalizer::WRAPPERS):
+  #   text_list  the text; empty text is the legacy [] (named, nothing matched)
+  #   items      the list, as legacy produced it ([] stays [])
+  #   nil        legacy produced nil
+  WRAPPERS = { SPELLING => "text_list", TEXT_LIST => "text_list", ITEMS => "items", ABSENT => "nil" }.freeze
+
+  module_function
+
+  # N9, N10, N11, then N8 on a graph of hash nodes (name => node).
+  # Returns [graph, {rule => sites rewritten}].
+  def prepare(graph)
+    @counts = Hash.new(0)
+    graph = empty_lists(graph)
+    graph = list_sites(graph)
+    graph = graph.transform_values { |node| named_options(node) }
+    [graph.transform_values { |node| spelling(node) }, @counts]
+  end
+
+  def count(rule) = @counts[rule] += 1
+
+  # Rewrites every capture node of +graph+ with the block (inner first).
+  def each_capture(node, &block)
+    key = node.keys.first
+    case key
+    when "seq", "alt" then { key => node[key].map { |n| each_capture(n, &block) } }
+    when "rep" then node.merge("rep" => each_capture(node["rep"], &block))
+    when "look" then node.merge("look" => each_capture(node["look"], &block))
+    when "as" then yield({ "as" => node["as"], "of" => each_capture(node["of"], &block) })
+    else node
+    end
+  end
+
+  # N10.
+  def list_sites(graph)
+    norm = ShapeNormalizer.new(graph)
+    caps = norm.solve
+    mixed = caps.select { |_, s| s.solid.include?(:hash) && s.solid.include?(:array) }.keys
+    graph.transform_values do |node|
+      each_capture(node) do |cap|
+        next cap unless mixed.include?(cap["as"]) && norm.shape(cap["of"], true).solid == Set[:array]
+
+        count("N10 list site")
+        { "as" => cap["as"], "of" => { "as" => ITEMS, "of" => cap["of"] } }
+      end
+    end
+  end
+
+  # N11.
+  def named_options(node)
+    each_capture(node) do |cap|
+      inner = cap["of"]
+      next cap unless inner.key?("rep") && inner["tag"] == "maybe"
+
+      count("N11 named option")
+      { "as" => cap["as"], "of" => { "alt" => [inner["rep"], { "as" => ABSENT, "of" => { "str" => "" } }] } }
+    end
+  end
+
+  # N9: every capture site whose value is text, or [] when empty.
+  def empty_lists(graph)
+    norm = ShapeNormalizer.new(graph)
+    norm.solve
+    fixed_rules = {}
+    rewrite = lambda do |node|
+      key = node.keys.first
+      case key
+      when "seq", "alt" then { key => node[key].map { |n| rewrite.call(n) } }
+      when "rep" then node.merge("rep" => rewrite.call(node["rep"]))
+      when "look" then node.merge("look" => rewrite.call(node["look"]))
+      when "as"
+        inner = node["of"]
+        if norm.shape(inner, true).solid.include?(:array) && norm.shape(inner, false).solid.subset?(Set[:string])
+          count("N9 empty list")
+          inner = non_empty_list(inner, graph, fixed_rules, node["as"])
+          inner = { "as" => TEXT_LIST, "of" => inner } unless CATALOG_CAPTURES.include?(node["as"])
+        else
+          inner = rewrite.call(inner)
+        end
+        { "as" => node["as"], "of" => inner }
+      else node
+      end
+    end
+    out = graph.transform_values { |node| rewrite.call(node) }
+    fixed_rules.each { |name, body| out[name] = body }
+    out
+  end
+
+  # +node+ (or the rule it names, rewritten in place for every call site)
+  # with its top-level min-0 repetition written `*x &*x`.
+  def non_empty_list(node, graph, fixed_rules, capture)
+    if node.key?("ref")
+      name = node["ref"]
+      fixed_rules[name] ||= non_empty_list(graph.fetch(name), graph, fixed_rules, capture)
+      return node
+    end
+    if node.key?("rep") && node["tag"] != "maybe" && node["min"].zero?
+      return { "seq" => [node, { "look" => node, "positive" => true }] }
+    end
+    if node.key?("alt") && (last = node["alt"].last).key?("rep") && last["tag"] != "maybe" && last["min"].zero?
+      return { "alt" => [*node["alt"][0..-2], { "seq" => [last, { "look" => last, "positive" => true }] }] }
+    end
+
+    abort "N9: cannot write the empty list of #{capture} as text: #{JSON.generate(node)[0, 200]}"
+  end
+
+  def to_node(expr)
+    case expr.first
+    when "ref" then { "ref" => expr[1] }
+    when "str" then { "str" => expr[1] }
+    when "re" then { "re" => expr[1] }
+    when "seq", "alt" then { expr.first => expr.drop(1).map { |e| to_node(e) } }
+    when "rep" then { "rep" => to_node(expr[4]), "min" => expr[1], "max" => expr[2], "tag" => expr[3] }
+    when "as" then { "as" => expr[1], "of" => to_node(expr[2]) }
+    when "look" then { "look" => to_node(expr[2]), "positive" => expr[1] }
+    else abort "unknown IR node #{expr.first}"
+    end
+  end
+
+  def to_tuple(node)
+    key = node.keys.first
+    case key
+    when "ref", "str", "re" then [key, node[key]]
+    when "seq", "alt" then [key, *node[key].map { |n| to_tuple(n) }]
+    when "rep" then ["rep", node.fetch("min"), node.fetch("max"), node.fetch("tag"), to_tuple(node["rep"])]
+    when "as" then ["as", node["as"], to_tuple(node["of"])]
+    when "look" then ["look", node.fetch("positive"), to_tuple(node["look"])]
+    else abort "unknown grammar node #{key}"
+    end
+  end
+
+  # N8 on a hash node.
+  def spelling(node)
+    key = node.keys.first
+    case key
+    when "seq", "alt" then { key => node[key].map { |n| spelling(n) } }
+    when "rep" then node.merge("rep" => spelling(node["rep"]))
+    when "look" then node.merge("look" => spelling(node["look"]))
+    when "as"
+      inner = spelling(node["of"])
+      if CATALOG_CAPTURES.include?(node["as"])
+        count("N8 catalog text")
+        inner = { "as" => SPELLING, "of" => inner }
+      end
+      { "as" => node["as"], "of" => inner }
+    else node
+    end
+  end
+
+  # +rules+ (name => {"*" | marker => tuple}) normalized: [rules in the same
+  # form, the dot marker's normalizer]. Aborts unless every marker gives the
+  # same wrappers and rule counts, and every shared rule the same graph.
+  def normalize(rules, markers)
+    runs = markers.to_h do |m|
+      graph, counts = prepare(rules.to_h { |name, exprs| [name, to_node(exprs[m] || exprs.fetch("*"))] })
+      norm = ShapeNormalizer.new(graph).run
+      counts.each { |rule, n| norm.counts[rule] += n }
+      clash = norm.collisions
+      abort "normalization leaves wrapper collisions under #{m}: #{clash.join('; ')}" unless clash.empty?
+      [m, norm]
+    end
+    first = runs.fetch(markers.first)
+    runs.each do |m, norm|
+      next if norm.wrapper_list == first.wrapper_list && norm.counts == first.counts
+
+      abort "normalization differs between markers #{markers.first} and #{m}"
+    end
+    out = rules.to_h do |name, exprs|
+      per = markers.to_h { |m| [m, to_tuple(runs[m].rules.fetch(name))] }
+      if exprs.key?("*")
+        abort "shared rule #{name} normalizes differently per marker" unless per.values.uniq.size == 1
+        [name, { "*" => per.values.first }]
+      else
+        [name, per]
+      end
+    end
+    [out, first]
+  end
+end
+
 class Generator
   # Parslet regexp -> PARG character class. The native engine runs these
   # through Rust's regex crate, so the sets below are the ones it matches.
@@ -219,8 +438,8 @@ class Generator
     @data_bytes = data_bytes
     @data = JSON.parse(data_bytes)
     abort "unsupported data format #{@data['format']}" unless @data["format"] == FORMAT
-    @rules = @data["rules"].to_h
     @markers = @data["markers"].map { |m| m["name"] }
+    @rules, @normalizer = Shapes.normalize(@data["rules"].to_h, @markers)
     @specialised = specialised_rules.to_h { |n| [n, true] }
     @plurimath_specialised = @specialised.keys
     @defined = {}
@@ -228,6 +447,10 @@ class Generator
     @helpers = {}
     check_names!
   end
+
+  attr_reader :normalizer
+
+  def root = @data.fetch("root")
 
   def generate
     body = @rules.flat_map { |name, exprs| define(name, exprs) }
@@ -255,7 +478,8 @@ class Generator
 
   def bindings
     @markers.flat_map do |m|
-      ["bindings #{tree_rule(m)} {", "  #{TREE_CAPTURE} -> #{TREE_CAPTURE} (raw)", "}", ""]
+      ["bindings #{tree_rule(m)} {", "  #{TREE_CAPTURE} -> #{TREE_CAPTURE} (raw)",
+       "  #{TREE_CAPTURE} -> #{MODEL} (any)", "}", ""]
     end[0..-2]
   end
 
@@ -423,6 +647,8 @@ class Generator
     when "as"
       name = CAPTURE_RENAMES.fetch(expr[1], expr[1])
       abort "capture name #{expr[1].inspect} cannot be spelled in PARG" unless name.match?(/\A[A-Za-z_][A-Za-z0-9_]*\z/)
+      # "" as name: PARG's zero-width marker (str("").as(:name)).
+      return "\"\" as #{name}" if expr[2] == ["str", ""]
 
       "#{group(expr[2], marker)} as #{name}"
     when "look"
@@ -569,12 +795,26 @@ else
   data = File.binread(DATA)
 end
 
-grammar = Generator.new(data).generate
+generator = Generator.new(data)
+grammar = generator.generate
+norm = generator.normalizer
+wrappers = "#{JSON.pretty_generate(
+  'format' => 'latexmath-wrappers/1',
+  'wrappers' => norm.wrapper_list.merge(Shapes::WRAPPERS).sort.to_h,
+  'rules' => norm.counts.sort.to_h,
+)}\n"
+# The dot entry's rules (every marker normalizes alike), with the capture
+# renames the grammar applies, for scripts/generate_model.rb.
+normalized = "#{JSON.generate('format' => FORMAT, 'root' => generator.root,
+                              'renames' => Generator::CAPTURE_RENAMES, 'rules' => norm.rules)}\n"
+outputs = { OUT => grammar, WRAPPERS_OUT => wrappers, NORMALIZED_OUT => normalized }
 if options[:check]
-  stale << OUT unless File.exist?(OUT) && File.binread(OUT) == grammar
+  outputs.each { |path, text| stale << path unless File.exist?(path) && File.binread(path) == text.b }
   abort "stale: #{stale.join(', ')}" unless stale.empty?
   puts "up to date"
 else
-  File.write(OUT, grammar)
-  puts "wrote #{OUT} (#{grammar.bytesize} bytes)"
+  outputs.each do |path, text|
+    File.write(path, text)
+    puts "wrote #{path} (#{text.bytesize} bytes)"
+  end
 end

@@ -171,13 +171,16 @@ RSpec.describe Latexmath::RawParser do
   end
 
   describe "the declared bindings" do
-    it "carry the parse shape's tree unchanged" do
+    it "carry the parse shape's tree unchanged, and its model data" do
       loaded = Latexmath.artifacts
       shape = loaded.parse.root_atom("dot").parse("x^2")
       bound = loaded.bindings.apply("dot", shape)
-      expect(bound.keys).to eq([:latex_tree])
+      expect(bound.keys).to eq(%i[latex_tree model])
       expect(bound[:latex_tree]).to equal(shape[:latex_tree])
-      expect(tagged(parse("x^2").tree)).to eq(tagged(shape[:latex_tree]))
+      result = parse("x^2")
+      expect(tagged(result.raw)).to eq(tagged(shape[:latex_tree]))
+      expect(tagged(result.tree)).to eq(tagged(Latexmath::Unwrap.call(shape[:latex_tree])))
+      expect(plain(bound[:model])).to eq(plain(shape[:latex_tree]))
     end
   end
 end

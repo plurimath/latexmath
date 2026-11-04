@@ -6,8 +6,10 @@ require_relative "parser_helper"
 # Plurimath at the pinned commit) through the internal raw-tree boundary.
 # For every row it requires the same preprocessed text and the same raw tree
 # in the capture's tagged form (keys, key order and kinds, slice text and
-# byte and character offsets), or, for a grammar refusal, a ParseError at
-# the same byte and character position.
+# byte and character offsets) once the grammar's shape-normalization
+# wrappers are unwrapped (Latexmath::Unwrap), or, for a grammar refusal, a
+# ParseError at the same byte and character position. For every parsed row
+# it also requires Latexmath.parse to build the typed model losslessly.
 #
 #   LATEXMATH_ORACLE_REPORT     the capture report (required; without it the
 #                               replay is skipped)
@@ -67,6 +69,7 @@ RSpec.describe "raw-tree parity with the legacy oracle" do
       expect(tagged(result.text)).to eq(pre["ok"])
       expect(tagged(result.tree, source: result.text)).to eq(raw["ok"])
       expect(result.engine).to eq(engine)
+      expect_model(result, input, decimal, engine)
     else
       error = raw.fetch("error")
       expect(error["class"]).to eq("Parsanol::ParseFailed")
