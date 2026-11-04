@@ -11,53 +11,25 @@ permissions:
 
 jobs:
   build:
-    name: Run specs on ${{ matrix.os }} ruby ${{ matrix.ruby }}
+    name: Parser and model specs on ${{ matrix.os }} ruby ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         ruby: ['3.2', '3.3', '3.4']
-        experimental: [false]
-    env:
-      # The 0.1.x converter specs. The parser specs (spec/artifact,
-      # spec/parser) and the oracle harness specs run in their own jobs.
-      SPEC: spec/*_spec.rb
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - name: Install LaTeXML on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo snap install latexml --edge
-          echo "/snap/bin" >> $GITHUB_PATH
-
-      - name: Install LaTeXML on macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install libxml2 cpanminus
-          env PATH=$(brew --prefix libxml2)/bin:$PATH \
-            cpanm --notest XML::LibXSLT LaTeXML
-          echo "$(brew --prefix perl)/bin" >> $GITHUB_PATH
-
-      - name: Install LaTeXML on Windows
-        if: matrix.os == 'windows-latest'
-        shell: cmd
-        run: |
-          cinst -y latexml
-          refreshenv
-          set PATH=C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;%PATH%
-          where latexmlmath
-          echo "C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin" >> %GITHUB_PATH%
-
-      - run: bundle exec rake
+      # The native-engine examples skip where Parsanol's native extension
+      # is not available; the parser job below requires it.
+      - run: bundle exec rspec spec/parser spec/model spec/standalone
 
   artifact:
     name: Grammar and artifact regeneration
@@ -113,7 +85,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - run: bundle exec rspec spec/artifact spec/parser spec/model
+      - run: bundle exec rspec spec/artifact spec/parser spec/model spec/standalone
 
   parity:
     name: Raw-tree parity with the pinned Plurimath (sample)
@@ -171,31 +143,47 @@ jobs:
           if-no-files-found: warn
 
   gem:
-    name: Gem build and installed parser smoke test
+    name: Gem build and installed gem smoke test on ruby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.4']
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4'
+          ruby-version: ${{ matrix.ruby }}
 
       - run: gem build latexmath.gemspec
 
+      - name: The gem holds only what it needs at run time
+        run: |
+          gem spec ./latexmath-*.gem files | sed -n 's/^- //p' | sort > "$RUNNER_TEMP/files.txt"
+          cat "$RUNNER_TEMP/files.txt"
+          unexpected=$(grep -Ev '^(lib/.*\.rb|artifacts/[^/]+|data/latex-symbols\.json|grammars/latex\.wrappers\.json|model/[^/]+|docs/[^/]+\.adoc|README\.adoc|CHANGELOG\.md|LICENSE\.md)$' "$RUNNER_TEMP/files.txt" || true)
+          test -z "$unexpected" || { echo "unexpected files: $unexpected"; exit 1; }
+          for f in lib/latexmath.rb artifacts/latex.json artifacts/latex.bindings.ruby.json data/latex-symbols.json grammars/latex.wrappers.json LICENSE.md; do
+            grep -qx "$f" "$RUNNER_TEMP/files.txt" || { echo "missing $f"; exit 1; }
+          done
+
       - name: Install the built gem alone and parse with it
         run: |
-          export GEM_HOME="$RUNNER_TEMP/gems"
+          export GEM_HOME="$RUNNER_TEMP/gems" GEM_PATH="$RUNNER_TEMP/gems"
           gem install --no-document ./latexmath-*.gem
           cd "$RUNNER_TEMP"
-          ruby -e '
-            require "latexmath/parser"
+          ruby -rlatexmath -e '
+            abort "Plurimath is loaded" if defined?(Plurimath)
+            abort "the 0.1.x API is still there" if Latexmath.respond_to?(:legacy_parse) || defined?(Latexmath::Tokenizer)
+            abort "loaded from the checkout" unless $LOADED_FEATURES.grep(%r{/latexmath/parser\.rb\z}).first.start_with?(ENV["GEM_HOME"])
             r = Latexmath::RawParser.parse("\\frac{1}{2}", engine: :native)
             abort "unexpected tree #{r.tree.inspect}" unless r.tree.key?(:binary)
-            abort "loaded from the checkout" unless $LOADED_FEATURES.grep(%r{/latexmath/parser\.rb\z}).first.start_with?(ENV["GEM_HOME"])
-            d = Latexmath.parse("\\frac{1}{2}", engine: :native)
+            d = Latexmath.parse("\\frac{1}{2}", engine: :ruby)
             abort "unexpected model #{d.inspect}" unless d.expression.binary.binary.literal == "frac"
-            puts "ok #{r.engine} #{r.tree.keys.inspect} #{d.class} #{Latexmath.artifact_paths.first}"
+            p Latexmath.parse("x^2")
+            puts "ok #{Latexmath::VERSION} #{r.engine} #{d.class} #{Latexmath.artifact_paths.first}"
           '
 
   oracle-harness:

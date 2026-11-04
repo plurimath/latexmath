@@ -13,8 +13,7 @@ require_relative "version"
 # Plurimath parser. See docs/parser-contract.adoc and
 # docs/model-contract.adoc.
 #
-# lib/latexmath.rb, which still loads the 0.1.x LaTeX-to-MathML converter,
-# requires this file outside Opal.
+# lib/latexmath.rb requires this file.
 module Latexmath
   autoload :Artifact, "latexmath/parser/artifact"
   autoload :Configuration, "latexmath/parser/configuration"
