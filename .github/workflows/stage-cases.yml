@@ -2,7 +2,8 @@ name: stage-cases
 
 # Writes the raw-tree stage-case payloads for plurimath-testsuite from the
 # pinned LaTeX stage generation (scripts/stage_cases.rb) and uploads them,
-# with the stage-gem producer block, as the stage-cases-latex artifact.
+# with the stage-gem producer block, as the stage-cases-latex artifact. The
+# typed-model payloads (--boundary typed-model) go to stage-cases-latex-model.
 
 on:
   push:
@@ -12,6 +13,9 @@ on:
       - "artifacts/**"
       - "lib/latexmath/parser.rb"
       - "lib/latexmath/parser/**"
+      - "lib/latexmath/model.rb"
+      - "lib/latexmath/model/**"
+      - "model/**"
       - "latexmath.gemspec"
       - "Gemfile"
       - "scripts/stage_cases.rb"
@@ -102,4 +106,34 @@ jobs:
             tmp/stage-cases
             tmp/stage-cases-report.json
             tmp/stage-cases.log
+          if-no-files-found: error
+
+      - name: Generate the typed-model stage cases on the Ruby and native engines
+        run: >-
+          bundle exec ruby scripts/stage_cases.rb
+          --testsuite tmp/testsuite
+          --language latex
+          --generation "$SOURCE_GENERATION"
+          --digest "$SOURCE_DIGEST"
+          --boundary typed-model
+          --output tmp/stage-cases-model
+          --report tmp/stage-cases-model-report.json
+          2>&1 | tee tmp/stage-cases-model.log
+
+      - name: Generate the typed-model stage cases again and require the same bytes
+        run: |
+          bundle exec ruby scripts/stage_cases.rb \
+            --testsuite tmp/testsuite --language latex \
+            --generation "$SOURCE_GENERATION" --digest "$SOURCE_DIGEST" \
+            --boundary typed-model --output tmp/stage-cases-model-again > /dev/null 2>&1
+          diff -r tmp/stage-cases-model tmp/stage-cases-model-again
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stage-cases-latex-model
+          path: |
+            tmp/stage-cases-model
+            tmp/stage-cases-model-report.json
+            tmp/stage-cases-model.log
           if-no-files-found: error

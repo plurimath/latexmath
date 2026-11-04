@@ -56,6 +56,27 @@ RSpec.describe LatexmathStageCases do
     end
   end
 
+  describe LatexmathStageCases::ModelForm do
+    before { Latexmath::Model::Document }
+
+    it "writes set fields in declaration order and leaves nil fields out" do
+      expect(described_class.node(Latexmath::Model::Document, { "decimal" => ",", "expression" => nil }))
+        .to eq("node" => "Latexmath::Model::Document", "fields" => [["decimal", { "str" => "," }]])
+    end
+
+    it "stops on data the model does not declare or does not type" do
+      expect { described_class.node(Latexmath::Model::Document, { "nope" => "1" }) }
+        .to raise_error(LatexmathStageCases::Error, /Document has no attribute nope/)
+      expect { described_class.node(Latexmath::Model::Document, { "decimal" => ["."] }) }
+        .to raise_error(LatexmathStageCases::Error, %r{/decimal: Array for a})
+    end
+
+    it "gives the same value from the bound data and from a walk of the built model" do
+      outcome, document = LatexmathStageCases::Parse.model_outcome("\\alpha_{i} + \\sqrt{x}", :ruby)
+      expect(outcome["tree"]).to eq(described_class.walk(document))
+    end
+  end
+
   # A one-generation testsuite checkout with a two-row latex payload.
   def build_testsuite(dir, cases)
     gen = File.join(dir, "stages/latex/generations/000001")
@@ -156,6 +177,44 @@ RSpec.describe LatexmathStageCases do
           "rows" => %w[latex-frac-simple.raw latex-stray-close-brace.raw],
         )
         expect(entry["sha256"]).to eq(Digest::SHA256.file(File.join(out, "payloads/raw-sample.yaml")).hexdigest)
+      end
+    end
+
+    it "writes typed-model payloads from Latexmath.parse with the LML export in the producer" do
+      Dir.mktmpdir do |dir|
+        testsuite = File.join(dir, "testsuite")
+        out = File.join(dir, "out")
+        digest = build_testsuite(testsuite, cases)
+        summary = described_class.run(testsuite: testsuite, language: "latex", generation: 1, digest: digest,
+                                      output: out, log: StringIO.new, boundary: "typed-model")
+        expect(summary["engine_disagreements"]).to be_empty
+
+        payload = YAML.safe_load_file(File.join(out, "payloads/model-sample.yaml"))
+        expect(payload.values_at("group", "boundary")).to eq(%w[model-sample typed-model])
+        frac, brace = payload["cases"]
+        expect(frac["id"]).to eq("latex-frac-simple.model")
+        expect(frac.dig("expected", "preprocessed")).to eq("str" => "\\frac{1}{2}")
+        tree = frac.dig("expected", "tree")
+        expect(tree["node"]).to eq("Latexmath::Model::Document")
+        expect(tree["fields"].map(&:first)).to eq(%w[expression decimal])
+        expect(tree).to eq(LatexmathStageCases::ModelForm.walk(Latexmath.parse("\\frac{1}{2}", engine: :ruby)))
+        expect(brace).to eq("id" => "latex-stray-close-brace.model", "input" => { "str" => "x}" },
+                            "options" => { "decimal" => "." },
+                            "expected" => { "refusal" => { "category" => "parse_error", "byte_offset" => 1 } })
+
+        fragment = YAML.safe_load_file(File.join(out, "provenance-fragment.yaml"))
+        producer = fragment.dig("producers", "latexmath-model")
+        expect(producer.values_at("kind", "semantic_boundary")).to eq(%w[stage-gem typed-model])
+        expect(producer.dig("configuration", "parser")).to eq("Latexmath.parse")
+        lml = producer.dig("environment", "lml")
+        sha = Digest::SHA256.file(File.expand_path("../../model/latex.lml.json", __dir__)).hexdigest
+        expect(lml).to include("format" => "latexmath-lml/1", "root" => "Latexmath::Model::Document",
+                               "checksum" => "sha256:#{sha}")
+        expect(lml.dig("export", "path")).to eq("model/latex.lml.json")
+        expect(fragment["payloads"].first.slice("path", "producer", "rows")).to eq(
+          "path" => "payloads/model-sample.yaml", "producer" => "latexmath-model",
+          "rows" => %w[latex-frac-simple.model latex-stray-close-brace.model],
+        )
       end
     end
 
