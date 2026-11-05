@@ -24,7 +24,7 @@ defaults:
 # The testsuite commit is a literal here (not read from a step output) so the
 # checkout ref is fixed by this file; a step checks it against the pin.
 env:
-  TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
+  TESTSUITE_COMMIT: 337262eda0483ceaa43a02cc52362c5b721e5eb3
   PIN: spec/fixtures/testsuite-pin.yml
 
 jobs:
@@ -91,7 +91,7 @@ jobs:
           }
           tamper commit 0000000000000000000000000000000000000000 commit
           tamper snapshot_digest "sha256:$(printf '0%.0s' {1..64})" digest
-          tamper generation 1 generation-1
+          tamper generation 2 generation-2
           tamper generation 99 generation-99
 
       - name: Pin and replay specs

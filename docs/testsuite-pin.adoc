@@ -11,15 +11,19 @@ named in `spec/fixtures/testsuite-pin.yml`:
 ----
 schema: plurimath-stage/pin/1
 repository: https://github.com/plurimath/plurimath-testsuite
-commit: fac69501e826d6bc140ca02e37bd70333cefd988
+commit: 337262eda0483ceaa43a02cc52362c5b721e5eb3
 language: latex
-generation: 2
-snapshot_digest: sha256:bad80c8a703e0761e96434779ff3826506be3702025b1bd77eb4c0e74bc58dde
+generation: 3
+snapshot_digest: sha256:782cb6ee7c75ec1e38ed343301c2220ad14c283b96e5cf9eac2a4ff39b1aeceb
 ----
 
 Generation 2 keeps every case of generation 1 (the legacy corpus, produced by
 Plurimath 0.11.12) byte for byte and adds a raw-tree row for each of its 139
 cases, rejections included, written by `scripts/stage_cases.rb`.
+
+Generation 3 keeps every payload of generation 2 byte for byte and adds
+typed-model rows beside the raw-tree rows. The replay still compares the
+raw-tree rows only.
 
 == What CI checks
 
@@ -46,7 +50,7 @@ To run the replay locally:
 [source,sh]
 ----
 git clone https://github.com/plurimath/plurimath-testsuite tmp/testsuite
-git -C tmp/testsuite checkout fac69501e826d6bc140ca02e37bd70333cefd988
+git -C tmp/testsuite checkout 337262eda0483ceaa43a02cc52362c5b721e5eb3
 bundle exec ruby scripts/replay_corpus.rb --testsuite tmp/testsuite --report tmp/replay.json
 ----
 
