@@ -1,0 +1,7 @@
+# Preserve the bytes the pinned replay hashes on every checkout.
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.parg text eol=lf
+*.txt text eol=lf
+*.rb text eol=lf

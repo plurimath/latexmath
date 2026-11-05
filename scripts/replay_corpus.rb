@@ -149,7 +149,7 @@ module LatexmathReplayCorpus
                 "mismatched_rows" => failures.size, "failures" => failures }
     if report
       FileUtils.mkdir_p(File.dirname(report))
-      File.write(report, "#{JSON.pretty_generate(summary, max_nesting: false)}\n")
+      File.binwrite(report, "#{JSON.pretty_generate(summary, max_nesting: false)}\n")
     end
     log.puts "#{rows.size} raw-tree rows from #{summary['raw_tree_payloads']} payloads on " \
              "#{ENGINES.join(' and ')}: #{failures.size} differ"
