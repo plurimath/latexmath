@@ -26,17 +26,26 @@ defaults:
 env:
   TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
   PIN: spec/fixtures/testsuite-pin.yml
-  # Parsanol ships a precompiled native extension for x86_64 Linux; fail
-  # instead of skipping the native-engine examples if it is missing.
-  LATEXMATH_REQUIRE_NATIVE: "1"
 
 jobs:
   replay:
-    name: Pinned testsuite generation replay
-    runs-on: ubuntu-latest
+    name: Pinned testsuite generation replay (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    env:
+      # Parsanol ships a precompiled native extension for x86_64 Linux; fail
+      # there instead of skipping the native-engine examples if it is missing.
+      # On Windows and macOS the native examples skip when it is absent.
+      LATEXMATH_REQUIRE_NATIVE: ${{ matrix.os == 'ubuntu-latest' && '1' || '0' }}
     timeout-minutes: 60
 
     steps:
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
       - uses: actions/checkout@v4
 
       - name: Use the compiler and Ruby the committed artifact records
@@ -100,7 +109,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: corpus-replay
+          name: corpus-replay-${{ matrix.os }}
           path: |
             tmp/corpus
             tmp/pins

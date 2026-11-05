@@ -44,17 +44,17 @@ RSpec.describe LatexmathReplayCorpus do
                "cases" => [{ "id" => "square", "input" => "x^2" }] }
     raw = { "schema" => "plurimath-stage/latex/cases/1", "group" => "raw-sample", "boundary" => "raw-tree",
             "cases" => rows }
-    File.write(File.join(gen, "payloads/sample.yaml"), YAML.dump(legacy))
-    File.write(File.join(gen, "payloads/raw-sample.yaml"), YAML.dump(raw))
+    File.binwrite(File.join(gen, "payloads/sample.yaml"), YAML.dump(legacy))
+    File.binwrite(File.join(gen, "payloads/raw-sample.yaml"), YAML.dump(raw))
     provenance = { "schema" => "plurimath-stage/provenance/1", "language" => "latex", "generation" => 1,
                    "payloads" => [{ "path" => "payloads/raw-sample.yaml" }, { "path" => "payloads/sample.yaml" }] }
-    File.write(File.join(gen, "provenance.yaml"), YAML.dump(provenance))
+    File.binwrite(File.join(gen, "provenance.yaml"), YAML.dump(provenance))
     digest = LatexmathStageCases::Source.snapshot_digest(gen)
     FileUtils.mkdir_p(File.join(dir, "generations"))
     ledger = { "schema" => "plurimath-stage/ledger/1", "language" => "latex", "layout" => 1,
                "entries" => [{ "generation" => 1, "path" => "stages/latex/generations/000001",
                                "snapshot_digest" => digest }] }
-    File.write(File.join(dir, "generations/latex.yaml"), YAML.dump(ledger))
+    File.binwrite(File.join(dir, "generations/latex.yaml"), YAML.dump(ledger))
     git = ["git", "-C", dir, "-c", "user.name=t", "-c", "user.email=t@example.com"]
     system("git", "init", "-q", dir, exception: true)
     system(*git, "add", ".", exception: true)
@@ -65,7 +65,7 @@ RSpec.describe LatexmathReplayCorpus do
   def write_pin(path, **fields)
     pin = { "schema" => "plurimath-stage/pin/1", "repository" => "https://github.com/plurimath/plurimath-testsuite",
             "commit" => nil, "language" => "latex", "generation" => 1, "snapshot_digest" => nil }
-    File.write(path, YAML.dump(pin.merge(fields.transform_keys(&:to_s)).compact))
+    File.binwrite(path, YAML.dump(pin.merge(fields.transform_keys(&:to_s)).compact))
     path
   end
 
@@ -100,7 +100,7 @@ RSpec.describe LatexmathReplayCorpus do
           path = write_pin(File.join(dir, "#{name}.yml"), **good, **change)
           expect { described_class.load_pin(path) }.to raise_error(described_class::Error), name
         end
-        File.write(File.join(dir, "extra.yml"), YAML.dump(YAML.load_file(File.join(dir, "ok.yml")).merge("x" => 1)))
+        File.binwrite(File.join(dir, "extra.yml"), YAML.dump(YAML.load_file(File.join(dir, "ok.yml")).merge("x" => 1)))
         expect { described_class.load_pin(File.join(dir, "extra.yml")) }
           .to raise_error(described_class::Error, /unknown keys x/)
       end
@@ -144,8 +144,7 @@ RSpec.describe LatexmathReplayCorpus do
         testsuite = File.join(dir, "testsuite")
         commit, digest = build_testsuite(testsuite, raw_rows)
         pin = write_pin(File.join(dir, "pin.yml"), commit: commit, snapshot_digest: digest)
-        File.write(File.join(testsuite, "stages/latex/generations/000001/payloads/sample.yaml"), "tampered\n",
-                   mode: "a")
+        File.open(File.join(testsuite, "stages/latex/generations/000001/payloads/sample.yaml"), "ab") { |io| io.write("tampered\n") }
         expect { run_replay(testsuite, pin) }.to raise_error(described_class::Error, /does not match the ledger's/)
       end
     end
