@@ -56,7 +56,7 @@ jobs:
     env:
       # The commit pinned in spec/fixtures/testsuite-pin.yml (a step checks
       # it); fixtures/ is unchanged there since 281059b.
-      TESTSUITE_COMMIT: fac69501e826d6bc140ca02e37bd70333cefd988
+      TESTSUITE_COMMIT: 337262eda0483ceaa43a02cc52362c5b721e5eb3
       FIXTURES_SHA256: 22ef60184fc547150c4f525f627b2bec22d9a3c4bb52794f772cf2a2dde78b59
       # Parsanol ships a precompiled native extension for x86_64 Linux;
       # fail instead of skipping the native-engine examples if it is missing.
