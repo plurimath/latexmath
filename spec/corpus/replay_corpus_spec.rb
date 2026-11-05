@@ -74,10 +74,10 @@ RSpec.describe LatexmathReplayCorpus do
   end
 
   describe "the committed pin" do
-    it "names latex generation 2 at an exact testsuite commit" do
+    it "names latex generation 3 at an exact testsuite commit" do
       pin = described_class.load_pin(PIN_FILE)
       expect(pin.language).to eq("latex")
-      expect(pin.generation).to eq(2)
+      expect(pin.generation).to eq(3)
       expect(pin.commit).to match(/\A\h{40}\z/)
       expect(pin.digest).to match(/\Asha256:\h{64}\z/)
     end
