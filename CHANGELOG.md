@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.1.0 (unreleased)
+
+### Added
+
+- `Latexmath::Model::MathSymbol` carries `value` and `kind` as model
+  attributes, so they appear in the LML export (`model/latex.lml.json`)
+  as well as on the object. Before, they were only methods and the export
+  had only `spelling`. (#58)
+- `docs/latex.adoc` describes the LaTeX math the grammar accepts and which
+  model class each construct becomes. The README links to it. (#62)
+
+### Changed
+
+- Parsanol 1.3.134 or later is required (still within `~> 1.3`). (#59)
+- The pinned testsuite replay in CI runs on Windows and macOS as well as
+  Linux. (#60)
+
+### Fixed
+
+- With `engine: :auto`, input that hits the native engine's recursion limit
+  under Parsanol 1.3.134 is parsed again on the Ruby engine instead of
+  being reported as a parse error. With `engine: :native` it raises
+  `Latexmath::NestingTooDeep`. (#59)
+
 ## 1.0.0
 
 Latexmath is now a LaTeX math parser that returns a typed model, built for
