@@ -20,24 +20,23 @@ require_relative "model/nodes"
 
 module Latexmath
   module Model
-    # The symbol table entry of a symbol is looked up from its spelling,
-    # stripped, as in the legacy transform (data/latex-symbols.json, read by
-    # Latexmath::Symbols). A spelling the table lacks is a plain symbol of
-    # its own text, kind "symbol".
+    # +value+ and +kind+ of a symbol are derived attributes: they are
+    # exported (and serialized) but never part of the bound data.
     class MathSymbol
-      # The Symbols::Entry for #spelling.
+      # The Symbols::Entry for #spelling, looked up from its spelling,
+      # stripped, as in the legacy transform.
       def entry
         Latexmath::Symbols.resolve(spelling.to_s)
       end
 
       # The Unicode text the symbol stands for.
-      def value
-        entry.value
+      def symbol_value
+        spelling && entry.value
       end
 
       # "symbol", "open" or "close".
-      def kind
-        entry.kind
+      def symbol_kind
+        spelling && entry.kind
       end
     end
   end
