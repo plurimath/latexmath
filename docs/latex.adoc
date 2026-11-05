@@ -1,0 +1,285 @@
+= LaTeX notation accepted by Latexmath
+:toc:
+
+This page describes the LaTeX math that Latexmath reads: how the input is
+prepared, which constructs the grammar accepts, and which part of the typed
+model each construct becomes. It is part of the specification set tracked in
+https://github.com/plurimath/plurimath/issues/525[plurimath#525].
+
+Everything here is taken from three sources in this repository:
+
+* the grammar, `grammars/latex.parg`, generated from the LaTeX grammar of
+  Plurimath at commit `e7ab4a5186c9be96f62d670574bc2c72f9365ad4`;
+* the model, `model/latex.lml.json`, generated from that grammar;
+* the specs under `spec/` and the stage corpus pinned in
+  `spec/fixtures/testsuite-pin.yml`.
+
+How the grammar and the model are produced and checked is in
+link:parser-contract.adoc[the parser contract] and
+link:model-contract.adoc[the model contract]. This page does not repeat
+those rules; it describes the notation.
+
+== The notation in brief
+
+Latexmath reads the LaTeX math that Plurimath reads, not TeX itself. There is
+no macro expansion, no `\def` and no catcode handling. The grammar is a fixed
+set of commands, symbols and environments. A formula is a sequence of terms;
+each term can carry a subscript and a superscript; some commands take
+arguments in braces or brackets.
+
+The grammar is not a LaTeX validator. It accepts what Plurimath accepts at
+the pinned commit, including some forms that LaTeX itself would not, and it
+refuses what Plurimath refuses.
+
+== Before the grammar runs
+
+The grammar reads a rewritten copy of the input, not the input itself. The
+steps are listed in full in the parser contract. In short:
+
+* Spaces are removed, except a space after a backslash (`\ `), and newlines
+  are removed.
+* Every non-ASCII character, and the characters `<`, `>` and `'`, become
+  hexadecimal character references such as `&#x3b1;`. `&` and `"` stay as
+  they are.
+* The contents of `\text{...}` and `\mbox{...}` are put back exactly as
+  written, spaces and non-ASCII characters included.
+
+So `\alpha` and `α` reach the grammar as different text (`\alpha` and
+`&#x3b1;`), and both are symbols. Spaces never separate terms: `ab` and
+`a b` are the same input.
+
+== Structure of a formula
+
+The root rule is `expression`. Read from the grammar:
+
+* An expression is one or more terms in a row. `{a \over b}` and
+  `a \over b` divide the terms before `\over` by the terms after it
+  (captures `dividend` and `divisor`).
+* A term (rule `sequence`) is one of the constructs below. When none of the
+  special forms applies, it is an operand, optionally with scripts.
+* An operand (rule `intermediate_exp`) is a single symbol, number or command,
+  a group in braces `{...}`, or a bracketed group: an opening bracket, an
+  optional expression and a closing bracket. The closing bracket may be
+  missing; then the model records it as absent.
+
+=== Scripts
+
+`_` gives a subscript and `^` a superscript. Both may be given, in either
+order. A script is one operand: one letter, one number, one command or one
+group. So `x^ab` is `x` with superscript `a`, followed by `b`, while `x^10`
+has the superscript `10`, because a digit string is one number.
+
+[cols="2,3"]
+|===
+|Form |Model
+
+|`a_b` |`Base` with `subscript`
+|`a^b` |`Power` with `supscript`
+|`a_b^c`, `a^c_b` |`PowerBase` with `subscript` and `supscript`
+|===
+
+Large operators `\sum`, `\prod`, `\int` and `\oint` take their limits as
+scripts and the operand after them as `third_value` (class `TernaryClass`). A function name
+followed by `\limits`, such as `\max\limits_{i}`, is the `limits` form.
+
+=== Fractions and other two-argument commands
+
+These commands take two arguments (capture `binary`): `\frac`, `\binom`,
+`\overset`, `\underset`, `\stackrel`, `\color`, and also `\lim`, `\log` and
+`\inf`, which take their scripts as arguments. `\sqrt{x}` is a square root;
+`\sqrt[n]{x}` takes the index in brackets as `first_value`. `\rule` takes up
+to three optional arguments. `\bmod`, `\pmod` and `\mod` stand between two
+operands (capture `under_over`).
+
+=== One-argument commands
+
+Function names and accents with one argument (capture `unary_functions`):
+
+`\arccos \arcsin \arctan \bar \cancel \cos \cosh \cot \coth \csc \ddot \deg
+\det \dim \dot \exp \gcd \hat \hom \ker \lg \liminf \limsup \ln \max \min
+\overline \phantom \sec \sin \sinh \sup \tan \tanh \tilde \underbrace \vec`
+
+The argument may be omitted, may be a bracketed operand or may be a
+`\left ... \right` group. Each of these may also carry scripts.
+
+`\overbrace` takes its argument and the label above it (capture
+`underover`).
+
+=== Fonts and text
+
+Font commands take one argument. The model keeps the command name as the
+text field `fonts` next to the argument:
+
+`\Bbb \bf \cal \displaystyle \mathbb \mathbf \mathbfit \mathbold \mathcal
+\mathds \mathfrak \mathit \mathrm \mathsf \mathsfbf \mathsfbfit \mathsfit
+\mathtt \mbf \mbfit \mbfitsans \mbfsans \mfrak \mit \msans \mscr \mtt \rm
+\textbf \textit \textrm`
+
+`\text{...}` and `\mbox{...}` hold literal text, kept as the caller wrote
+it: the field `text` names the command and `first_value` holds the text. `\operatorname{...}` holds the name of an operator.
+
+=== Brackets
+
+`\left` and `\right` enclose a group (model class `LeftRight`). The bracket
+after `\left` or `\right` may be `.` or missing. The grammar accepts
+`\left( x` with no `\right`. Recognised brackets include `(`, `)`, `[`,
+`]`, `\{`, `\}`, `\lbrace`, `\rbrace`, `\lbrack`, `\rbrack`, `\langle`,
+`\rangle`, `\lfloor`, `\rfloor`, `\lceil`, `\rceil`, `|`, `\vert`, `\Vert`,
+`\|` and `\backslash`, together with their Unicode characters.
+
+=== Environments
+
+`\begin{name} ... \end{name}` reads an environment whose rows are separated
+by `\\` (attribute `row_break`) and whose cells are separated by `&`. A
+starred name and an optional argument in brackets are accepted.
+`\begin{array}{...}` takes its column specification as `args`. The grammar
+also has a command form, `\matrix{...}` and the like, for the names
+`matrix`, `pmatrix`, `bmatrix`, `Bmatrix`, `vmatrix`, `Vmatrix`, `align`,
+`split`, `multline` and `array`.
+
+The grammar does not check that the name after `\end` matches the name after
+`\begin`. The model does not build rows and cells: the body of the
+environment is the same nested expression as any other formula, and `&` and
+`\\` appear in it as an `operant` and a `row_break` (see <<examples>>).
+
+`\substack` takes one operand.
+
+=== Symbols and numbers
+
+* A single ASCII letter is a symbol.
+* A command name from the symbol table, such as `\alpha` or `\leq`, is a
+  symbol. The table, `data/latex-symbols.json`, has 3,280 spellings at the
+  pinned commit. A character reference such as `&#x3b1;` is also looked up
+  there.
+* `"` is a literal symbol, and the ASCII punctuation
+  `! # $ % & ' * + , - . / : ; < = > ? @ ^ _ |` reads as operators.
+* Numbers are digit strings, with an optional decimal part:
+  `1`, `1.5`, `.5`. Hexadecimal (`0x1F`), binary (`0b101`) and octal
+  (`0o17`) numbers are separate forms.
+* `\ ` is a space and `\;` a thick space.
+
+Each symbol in the model is a `MathSymbol` with three fields: `spelling`
+(the text matched), `value` (its Unicode text from the table) and `kind`
+(`symbol`, `open` or `close`). A spelling the table lacks stands for itself.
+
+=== Decimal marker
+
+The decimal marker is `.` unless the caller passes `decimal: ","` or
+`decimal: "٫"`. The grammar has one entry for each marker, and only the
+chosen marker is read as part of a number.
+
+== The typed model
+
+`Latexmath.parse` returns a `Latexmath::Model::Document` with `expression`
+(the formula) and `decimal` (the marker). Input with no formula gives a
+document whose `expression` is nil. The model has 33 generated classes; the
+names follow the grammar captures (`Binary`, `UnaryFunctions`,
+`LeftRight`, `Environment`, `TableData`, `PowerBase` and so on). Every field
+with its type is listed in `model/latex.lml.json`.
+
+[[examples]]
+== Examples
+
+These results were produced by parsing each input with `Latexmath.parse` at
+this revision and printing the non-empty fields of the model. A symbol is
+shown as `MathSymbol(spelling)`. The root of the expression is a
+`LatexTree`.
+
+[source]
+----
+a^2
+  LatexTree(power: Power(supscript: Supscript(number: "2"), symbols: MathSymbol("a")))
+
+x_i^2
+  LatexTree(power_base: PowerBase(subscript: Subscript(symbols: MathSymbol("i")),
+    supscript: Supscript(number: "2"), symbols: MathSymbol("x")))
+
+\frac{a}{b}
+  LatexTree(binary: Binary(binary: Binary(literal: "frac"),
+    first_value: FirstValue(expression: Expression(symbols: MathSymbol("a"))),
+    second_value: SecondValue(expression: Expression(symbols: MathSymbol("b")))))
+
+{a \over b}
+  LatexTree(over: Over(dividend: Dividend(items: [ItemsItem(symbols: MathSymbol("a"))]),
+    divisor: Divisor(items: [ItemsItem(symbols: MathSymbol("b"))])))
+
+\sqrt[3]{x}
+  LatexTree(binary: Binary(first_value: FirstValue(expression: Expression(items: [ItemsItem(number: "3")]),
+    lparen: "[", rparen: "]"), root: "sqrt",
+    second_value: SecondValue(expression: Expression(symbols: MathSymbol("x")))))
+
+\sin x
+  LatexTree(unary_functions: UnaryFunctions(first_value: FirstValue(symbols: MathSymbol("x")), unary: "sin"))
+
+\sum_{i=1}^{n} i
+  LatexTree(ternary_class: TernaryClass(subscript: Subscript(expression: Expression(
+    expression: Expression(expression: Expression(number: "1"), sequence: Sequence(operant: "=")),
+    sequence: Sequence(symbols: MathSymbol("i")))),
+    supscript: Supscript(expression: Expression(symbols: MathSymbol("n"))),
+    ternary_functions: "sum", third_value: ThirdValue(symbols: MathSymbol("i"))))
+
+\left( x \right)
+  LatexTree(left_right: LeftRight(expression: Expression(symbols: MathSymbol("x")),
+    left: "\\left", left_paren: LeftParen(literal: "("),
+    right: "\\right", right_paren: RightParen(literal: ")")))
+
+\left( x
+  LatexTree(left_right: LeftRight(expression: Expression(symbols: MathSymbol("x")),
+    left: "\\left", left_paren: LeftParen(literal: "(")))
+
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+  LatexTree(environment: Environment(ending: Ending(environment: Environment(literal: "pmatrix")),
+    environment: Environment(literal: "pmatrix"),
+    table_data: TableData(expression: Expression(expression: Expression(expression: Expression(
+      expression: Expression(expression: Expression(expression: Expression(symbols: MathSymbol("d")),
+      sequence: Sequence(operant: "&")), sequence: Sequence(symbols: MathSymbol("c"))),
+      sequence: Sequence(row_break: "\\\\")), sequence: Sequence(symbols: MathSymbol("b"))),
+      sequence: Sequence(operant: "&")), sequence: Sequence(symbols: MathSymbol("a")))))
+
+\mathbf{x}
+  LatexTree(fonts: "mathbf", intermediate_exp: IntermediateExp(expression: Expression(symbols: MathSymbol("x"))))
+
+\text{if } x
+  LatexTree(expression: Expression(symbols: MathSymbol("x")),
+    sequence: Sequence(first_value: FirstValue(text_list: "if "), text: "text"))
+
+\alpha
+  LatexTree(symbols: MathSymbol("alpha"))
+
+1.5
+  LatexTree(number: "1.5")
+
+\frac{a}
+  Latexmath::ParseError at char 8
+----
+
+Fields inside each class are printed in the order the class declares them,
+not in input order.
+
+== Errors
+
+Input the grammar does not match raises `Latexmath::ParseError`. The error
+gives the position as a character and byte offset in the caller's text, and
+the position in the rewritten text as `grammar_char_offset` and
+`grammar_byte_offset`. The wording of the message is not part of the
+contract. Input nested deeper than the native engine allows is parsed with
+the Ruby engine by default, or raises `Latexmath::NestingTooDeep` when the
+native engine is requested.
+
+== Conformance
+
+* `spec/model/parse_spec.rb` checks the public parse and its errors.
+* `spec/corpus/replay_corpus_spec.rb` and `spec/stage_cases/` replay the
+  stage corpus generation pinned in `spec/fixtures/testsuite-pin.yml`
+  (plurimath-testsuite `stages/latex/`, generation 2, 139 cases).
+* `spec/parser/oracle_parity_spec.rb` compares the raw tree with captures of
+  the Plurimath parser.
+
+== Open questions
+
+* Whether the mismatch between `\begin{name}` and `\end{other}` should be
+  refused: not specified.
+* Whether `\left` without `\right` is intended or a legacy leniency: not
+  specified.
+* The meaning of the model for commands that legacy keeps without a
+  dedicated class (for example `\rule`): not specified beyond the captures.

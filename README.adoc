@@ -79,6 +79,9 @@ The rules for each model class are in link:docs/model-contract.adoc[the
 model contract], and the accepted syntax and the preprocessing of the input
 in link:docs/parser-contract.adoc[the parser contract].
 
+For a description of the LaTeX notation the gem reads and the model each
+construct becomes, see link:docs/latex.adoc[LaTeX notation].
+
 == Errors
 
 Input that is not valid LaTeX math raises `Latexmath::ParseError`, which
