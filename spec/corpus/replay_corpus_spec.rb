@@ -34,10 +34,31 @@ RSpec.describe LatexmathReplayCorpus do
     ]
   end
 
+  # The typed model of "\alpha" as scripts/stage_cases.rb writes it; with
+  # +derived+ false, as generation 3 recorded it, before MathSymbol declared
+  # value and kind.
+  def alpha_model(derived: true, spelling: "alpha", value: "α")
+    symbol = [["spelling", { "str" => spelling }]]
+    symbol += [["value", { "str" => value }], ["kind", { "str" => "symbol" }]] if derived
+    {
+      "preprocessed" => { "str" => "\\alpha" },
+      "tree" => { "node" => "Latexmath::Model::Document", "fields" => [
+        ["expression", { "node" => "Latexmath::Model::LatexTree", "fields" => [
+          ["symbols", { "node" => "Latexmath::Model::MathSymbol", "fields" => symbol }],
+        ] }],
+        ["decimal", { "str" => "." }],
+      ] },
+    }
+  end
+
+  def model_row(id, expected, input: "\\alpha")
+    { "id" => id, "input" => { "str" => input }, "options" => { "decimal" => "." }, "expected" => expected }
+  end
+
   # A testsuite checkout with one latex generation: a legacy payload, which
-  # the replay skips, and a raw-tree payload of +rows+. Returns
-  # [commit, snapshot digest].
-  def build_testsuite(dir, rows)
+  # the replay skips, a raw-tree payload of +rows+ and, when +model_rows+ is
+  # given, a typed-model payload of them. Returns [commit, snapshot digest].
+  def build_testsuite(dir, rows, model_rows: nil)
     gen = File.join(dir, "stages/latex/generations/000001")
     FileUtils.mkdir_p(File.join(gen, "payloads"))
     legacy = { "schema" => "plurimath-corpus/latex/1", "group" => "sample",
@@ -46,8 +67,15 @@ RSpec.describe LatexmathReplayCorpus do
             "cases" => rows }
     File.binwrite(File.join(gen, "payloads/sample.yaml"), YAML.dump(legacy))
     File.binwrite(File.join(gen, "payloads/raw-sample.yaml"), YAML.dump(raw))
+    paths = ["payloads/raw-sample.yaml", "payloads/sample.yaml"]
+    if model_rows
+      model = { "schema" => "plurimath-stage/latex/cases/1", "group" => "model-sample", "boundary" => "typed-model",
+                "cases" => model_rows }
+      File.binwrite(File.join(gen, "payloads/model-sample.yaml"), YAML.dump(model))
+      paths.unshift("payloads/model-sample.yaml")
+    end
     provenance = { "schema" => "plurimath-stage/provenance/1", "language" => "latex", "generation" => 1,
-                   "payloads" => [{ "path" => "payloads/raw-sample.yaml" }, { "path" => "payloads/sample.yaml" }] }
+                   "payloads" => paths.map { |path| { "path" => path } } }
     File.binwrite(File.join(gen, "provenance.yaml"), YAML.dump(provenance))
     digest = LatexmathStageCases::Source.snapshot_digest(gen)
     FileUtils.mkdir_p(File.join(dir, "generations"))
@@ -117,7 +145,52 @@ RSpec.describe LatexmathReplayCorpus do
         pin = write_pin(File.join(dir, "pin.yml"), commit: commit, snapshot_digest: digest)
         summary = run_replay(testsuite, pin, language: "latex", generation: 1)
         expect(summary.values_at("raw_tree_payloads", "raw_tree_rows", "mismatched_rows")).to eq([1, 2, 0])
+        expect(summary.values_at("typed_model_payloads", "typed_model_rows")).to eq([0, 0])
         expect(summary["engines"]).to eq(%w[ruby native])
+      end
+    end
+
+    it "replays every typed-model row on both engines" do
+      Dir.mktmpdir do |dir|
+        testsuite = File.join(dir, "testsuite")
+        models = [model_row("alpha.model", alpha_model), model_row("refused.model", refusal, input: "}")]
+        commit, digest = build_testsuite(testsuite, raw_rows, model_rows: models)
+        pin = write_pin(File.join(dir, "pin.yml"), commit: commit, snapshot_digest: digest)
+        summary = run_replay(testsuite, pin)
+        expect(summary.values_at("typed_model_payloads", "typed_model_rows", "mismatched_rows")).to eq([1, 2, 0])
+        expect(summary["unrecorded_derived_rows"]).to eq([])
+      end
+    end
+
+    it "compares a typed-model row without the derived attributes it does not record, and reports them" do
+      Dir.mktmpdir do |dir|
+        testsuite = File.join(dir, "testsuite")
+        commit, digest = build_testsuite(testsuite, raw_rows,
+                                         model_rows: [model_row("alpha.model", alpha_model(derived: false))])
+        pin = write_pin(File.join(dir, "pin.yml"), commit: commit, snapshot_digest: digest)
+        log = StringIO.new
+        summary = described_class.run(testsuite: testsuite, pin: pin, log: log)
+        expect(summary["mismatched_rows"]).to eq(0)
+        expect(summary["unrecorded_derived_attributes"])
+          .to eq(%w[Latexmath::Model::MathSymbol#kind Latexmath::Model::MathSymbol#value])
+        expect(summary["unrecorded_derived_rows"].map { |r| r["id"] }).to eq(["alpha.model"])
+        expect(log.string).to include("1 typed-model rows do not record the derived attributes")
+      end
+    end
+
+    it "fails on a typed-model row whose recorded fields differ, derived or not" do
+      Dir.mktmpdir do |dir|
+        testsuite = File.join(dir, "testsuite")
+        models = [model_row("spelling.model", alpha_model(derived: false, spelling: "beta")),
+                  model_row("value.model", alpha_model(value: "β"))]
+        commit, digest = build_testsuite(testsuite, raw_rows, model_rows: models)
+        pin = write_pin(File.join(dir, "pin.yml"), commit: commit, snapshot_digest: digest)
+        report = File.join(dir, "report.json")
+        expect { run_replay(testsuite, pin, report: report) }
+          .to raise_error(described_class::Error, /2 rows differ: spelling\.model, value\.model/)
+        failures = JSON.parse(File.read(report)).fetch("failures")
+        expect(failures.map { |f| [f["boundary"], f["mismatches"].map { |m| m["engine"] }] })
+          .to eq([["typed-model", %w[ruby native]]] * 2)
       end
     end
 

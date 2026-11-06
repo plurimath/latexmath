@@ -3,8 +3,8 @@ name: corpus
 # Replays the plurimath-testsuite stage generation pinned in
 # spec/fixtures/testsuite-pin.yml: the testsuite's own validator checks the
 # pin, tampered copies of the pin must fail that check, and every raw-tree
-# row of the pinned generation must parse to its expected value on the Ruby
-# and native engines (scripts/replay_corpus.rb).
+# and typed-model row of the pinned generation must parse to its expected
+# value on the Ruby and native engines (scripts/replay_corpus.rb).
 
 on:
   push:
@@ -97,7 +97,7 @@ jobs:
       - name: Pin and replay specs
         run: bundle exec rspec spec/corpus
 
-      - name: Replay every raw-tree row of the pinned generation on both engines
+      - name: Replay every raw-tree and typed-model row of the pinned generation on both engines
         run: >-
           mkdir -p tmp/corpus &&
           bundle exec ruby scripts/replay_corpus.rb
