@@ -16,6 +16,9 @@
 - Parsanol 1.3.134 or later is required (still within `~> 1.3`). (#59)
 - The pinned testsuite replay in CI runs on Windows and macOS as well as
   Linux. (#60)
+- The testsuite pin moves to latex generation 3, which adds typed-model
+  rows beside the raw-tree rows. The replay still compares the raw-tree
+  rows. (#61)
 
 ### Fixed
 
