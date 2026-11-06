@@ -19,6 +19,11 @@
 - The testsuite pin moves to latex generation 3, which adds typed-model
   rows beside the raw-tree rows. The replay still compares the raw-tree
   rows. (#61)
+- The pinned testsuite replay (`scripts/replay_corpus.rb`) also replays
+  the typed-model rows, through `Latexmath.parse` on both engines. A
+  derived attribute that a row does not record, such as `MathSymbol#value`
+  and `#kind` in the generation 3 rows, is left out of the comparison and
+  listed in the report.
 
 ### Fixed
 
