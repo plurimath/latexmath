@@ -141,7 +141,7 @@ module LatexmathStageCases
 
       instance = nil
       fields = attributes.filter_map do |name, attribute|
-        symbol_field = klass <= Latexmath::Model::MathSymbol && %i[value kind].include?(name)
+        symbol_field = Latexmath::Model.catalog_field?(klass, name)
         value = if attribute.derived? || symbol_field
                   (instance ||= klass.new(data)).public_send(name)
                 else

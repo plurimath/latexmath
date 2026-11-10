@@ -10,7 +10,7 @@ RSpec.describe "portable symbol declarations" do
     expect([symbol.using_default?(:value), symbol.using_default?(:kind)]).to eq(defaults)
     expect(JSON.parse(symbol.to_json)).to eq("spelling" => "alpha", "value" => "α", "kind" => "symbol")
     symbol.spelling.replace("unlisted")
-    expect([symbol.value, symbol.kind]).to eq(["unlisted", "unlisted"])
+    expect([symbol.value, symbol.kind]).to eq(["unlisted", "symbol"])
     symbol.spelling = nil
     expect([symbol.value, symbol.kind]).to eq([nil, nil])
   end

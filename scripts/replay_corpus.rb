@@ -193,7 +193,8 @@ module LatexmathReplayCorpus
       return false unless klass.respond_to?(:attributes)
 
       attribute = klass.attributes[name.to_sym] || klass.attributes[name]
-      attribute.respond_to?(:derived?) && attribute.derived?
+      Latexmath::Model.catalog_field?(klass, name) ||
+        (attribute.respond_to?(:derived?) && attribute.derived?)
     end
   end
 
