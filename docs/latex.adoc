@@ -135,7 +135,11 @@ starred name and an optional argument in brackets are accepted.
 `\begin{array}{...}` takes its column specification as `args`. The grammar
 also has a command form, `\matrix{...}` and the like, for the names
 `matrix`, `pmatrix`, `bmatrix`, `Bmatrix`, `vmatrix`, `Vmatrix`, `align`,
-`split`, `multline` and `array`.
+`split`, `multline`, `array` and `cases`.
+
+`\begin{cases} ... \end{cases}` is read the same way as the others. The
+grammar does not say that its rows have a left brace and no right fence;
+that is for the consumer to apply (Plurimath's `Table::Cases`).
 
 The grammar does not check that the name after `\end` matches the name after
 `\begin`. The model does not build rows and cells: the body of the
