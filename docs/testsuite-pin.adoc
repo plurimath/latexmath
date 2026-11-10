@@ -21,9 +21,17 @@ Generation 2 keeps every case of generation 1 (the legacy corpus, produced by
 Plurimath 0.11.12) byte for byte and adds a raw-tree row for each of its 139
 cases, rejections included, written by `scripts/stage_cases.rb`.
 
-Generation 3 keeps every payload of generation 2 byte for byte and adds
-typed-model rows beside the raw-tree rows. The replay still compares the
-raw-tree rows only.
+Generation 3 keeps every payload of generation 2 byte for byte and adds a
+typed-model row for each of the 139 cases beside the raw-tree rows. The
+replay compares both.
+
+The typed-model rows were written before `Latexmath::Model::MathSymbol`
+declared `value` and `kind`, so 108 of them have symbols without those two
+fields. Both are derived attributes, computed from `spelling`. The replay
+leaves a derived attribute out of the comparison when the row's object does
+not record it, and lists those rows in its report
+(`unrecorded_derived_rows`). A derived attribute that a row does record must
+match, like every other field.
 
 == What CI checks
 
@@ -43,7 +51,10 @@ The `corpus` workflow checks out the testsuite at the pinned commit and then:
   `Latexmath::RawParser.parse` on the Ruby and the native engine. Each
   engine's result, the preprocessed text and tree or the refusal and its byte
   offset, must equal the row's expected value in the canonical form of the
-  testsuite's `docs/tree-parity-contract.adoc`.
+  testsuite's `docs/tree-parity-contract.adoc`. It then parses every row of
+  every typed-model payload with `Latexmath.parse` on both engines and
+  compares the model in the form `scripts/stage_cases.rb` writes, as
+  described above.
 
 To run the replay locally:
 

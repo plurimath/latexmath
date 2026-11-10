@@ -129,7 +129,8 @@ The LaTeX cases of
 https://github.com/plurimath/plurimath-testsuite[plurimath-testsuite] are
 kept there as numbered, immutable generations. `spec/fixtures/testsuite-pin.yml`
 names the exact commit, generation and digest this gem is tested against, and
-CI replays every raw-tree row of that generation on both engines. CI also
+CI replays every raw-tree and typed-model row of that generation on both
+engines. CI also
 compares the parse tree with the one the pinned Plurimath release produces
 for every LaTeX case of the testsuite. See
 link:docs/testsuite-pin.adoc[the testsuite pin].
