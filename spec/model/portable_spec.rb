@@ -4,7 +4,7 @@ require "json"
 
 RSpec.describe "portable symbol declarations" do
   it "keeps direct construction, live spelling and writer values" do
-    symbol = Latexmath::Model::MathSymbol.new(spelling: "alpha")
+    symbol = Latexmath::Model::MathSymbol.new(spelling: +"alpha")
     defaults = [symbol.using_default?(:value), symbol.using_default?(:kind)]
     expect([symbol.value, symbol.kind]).to eq(["α", "symbol"])
     expect([symbol.using_default?(:value), symbol.using_default?(:kind)]).to eq(defaults)
