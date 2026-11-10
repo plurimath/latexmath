@@ -4,6 +4,8 @@
 
 ### Added
 
+- The grammar reads the `cases` environment (`\begin{cases} ... \end{cases}`)
+  like the other environments. Before, it was refused.
 - `Latexmath::Model::MathSymbol` carries `value` and `kind` as model
   attributes, so they appear in the LML export (`model/latex.lml.json`)
   as well as on the object. Before, they were only methods and the export

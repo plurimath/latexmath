@@ -62,6 +62,34 @@ RSpec.describe "Latexmath.parse" do
     expect(Latexmath::RawParser.parse("a + b", engine: :ruby).text.encoding).to eq(Encoding::US_ASCII)
   end
 
+  describe "the cases environment" do
+    let(:input) { "f(x)=\\begin{cases}1 & x>0\\\\0 & \\text{otherwise}\\end{cases}" }
+
+    it "is read like the other environments" do
+      expect { parse(input) }.not_to raise_error
+      environment = parse("\\begin{cases}1 & x\\end{cases}").expression.environment
+      expect(environment.environment.literal).to eq("cases")
+      expect(environment.ending.environment.literal).to eq("cases")
+      expect(environment.table_data).to be_a(Latexmath::Model::TableData)
+    end
+
+    it "keeps the column and row separators in the body" do
+      tree = Latexmath::RawParser.parse(input, engine: :ruby).tree
+      keys = []
+      walk = lambda do |node|
+        case node
+        when Hash
+          keys.concat(node.keys)
+          node.each_value(&walk)
+        when Array then node.each(&walk)
+        end
+      end
+      walk.call(tree)
+      expect(keys).to include("\\\\")
+      expect(tree.to_s).to include("cases")
+    end
+  end
+
   it "rejects bad arguments" do
     expect { parse(1) }.to raise_error(ArgumentError, /must be a String/)
     expect { parse("1", decimal: ";") }.to raise_error(ArgumentError, /unsupported decimal marker/)
