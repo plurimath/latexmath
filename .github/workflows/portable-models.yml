@@ -1,0 +1,28 @@
+name: Portable model declarations
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  portable-models:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: lutaml/lutaml-model
+          ref: fd2989fd8478b1ecb2508d98fa2d66792c09c72b
+          path: tmp/lutaml-model-candidate
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - run: bundle exec ruby -I tmp/lutaml-model-candidate/lib scripts/export_portable_models.rb "$RUNNER_TEMP/latex.bundle.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-model-bundle
+          path: ${{ runner.temp }}/latex.bundle.json
+          if-no-files-found: error
