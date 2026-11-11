@@ -31,7 +31,7 @@ module ParserSpecHelpers
       # Derived attributes (MathSymbol's value and kind) are computed from
       # the bound spelling, so they are not part of the bound data.
       value.class.attributes.each_with_object({}) do |(name, attribute), h|
-        next if attribute.derived?
+        next if attribute.derived? || Latexmath::Model.catalog_field?(value.class, name)
 
         v = value.public_send(name)
         h[name] = model_data(v) unless v.nil?

@@ -13,6 +13,12 @@ module Latexmath
   # (Document.new on the grammar's model binding). No code here walks the
   # parse tree. See docs/model-contract.adoc.
   module Model
+    # Stage-computed fields stay distinct from grammar-bound captures even
+    # though their portable LML declarations are ordinary typed strings.
+    def self.catalog_field?(klass, name)
+      klass.is_a?(Class) && klass <= MathSymbol && %w[value kind].include?(name.to_s)
+    end
+
   end
 end
 
@@ -23,6 +29,16 @@ module Latexmath
     # +value+ and +kind+ of a symbol are derived attributes: they are
     # exported (and serialized) but never part of the bound data.
     class MathSymbol
+      # Keep the Ruby convenience readers live while the portable schema
+      # carries ordinary typed values. Reads do not change default tracking.
+      def value
+        @value = symbol_value
+      end
+
+      def kind
+        @kind = symbol_kind
+      end
+
       # The Symbols::Entry for #spelling, looked up from its spelling,
       # stripped, as in the legacy transform.
       def entry

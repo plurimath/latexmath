@@ -97,8 +97,8 @@ out << <<~RUBY
     # spelling through the symbol table (lib/latexmath/model.rb).
     class #{SYMBOL_CLASS} < Lutaml::Model::Serializable
       attribute :spelling, :string
-      attribute :value, :string, method: :symbol_value
-      attribute :kind, :string, method: :symbol_kind
+      attribute :value, :string
+      attribute :kind, :string
     end
 
     # The root: one parsed formula (binding +model+), and the decimal

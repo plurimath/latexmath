@@ -141,7 +141,8 @@ module LatexmathStageCases
 
       instance = nil
       fields = attributes.filter_map do |name, attribute|
-        value = if attribute.derived?
+        symbol_field = Latexmath::Model.catalog_field?(klass, name)
+        value = if attribute.derived? || symbol_field
                   (instance ||= klass.new(data)).public_send(name)
                 else
                   data.fetch(name.to_s) { data[name] }
