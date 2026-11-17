@@ -2,6 +2,7 @@
 
 require "open3"
 require "rbconfig"
+require_relative "../../lib/latexmath/version"
 
 # `require "latexmath"` in a fresh process: the stage parser and model load
 # on their own, without Plurimath and without the removed 0.1.x converter.
@@ -20,7 +21,7 @@ RSpec.describe "require \"latexmath\"" do
       puts [d.class, power.symbols.spelling, power.supscript.number, Latexmath::VERSION].join(" ")
     RUBY
     expect(status).to be_success, err
-    expect(out).to eq("Latexmath::Model::Document x 2 1.0.0\n")
+    expect(out).to eq("Latexmath::Model::Document x 2 #{Latexmath::VERSION}\n")
   end
 
   it "has no 0.1.x converter API" do
