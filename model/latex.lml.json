@@ -348,6 +348,10 @@
           "type": "Latexmath::Model::SecondValue"
         },
         {
+          "name": "unary_functions",
+          "type": "Latexmath::Model::UnaryFunctions"
+        },
+        {
           "name": "under_over",
           "type": "Latexmath::Model::UnderOver"
         }

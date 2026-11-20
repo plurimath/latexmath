@@ -24,6 +24,13 @@ RSpec.describe "boxed expressions" do
         expect(model_data(Latexmath.parse(input, engine: engine).expression).to_s.scan("boxed").size).to eq(2)
       end
 
+      it "preserves a boxed base with a subscript or superscript" do
+        ["\\boxed{x}_i", "\\boxed{x}^2"].each do |input|
+          result = Latexmath::RawParser.parse(input, engine: engine)
+          expect_model(result, input, ".", engine)
+        end
+      end
+
       it "uses the caller's decimal marker inside the box" do
         [".", ",", "٫"].each do |decimal|
           input = "\\boxed{1#{decimal}5}"

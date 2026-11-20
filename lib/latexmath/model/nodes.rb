@@ -98,6 +98,7 @@ module Latexmath
       attribute :binary, "Latexmath::Model::Binary"
       attribute :first_value, "Latexmath::Model::FirstValue"
       attribute :second_value, "Latexmath::Model::SecondValue"
+      attribute :unary_functions, "Latexmath::Model::UnaryFunctions"
       attribute :under_over, "Latexmath::Model::UnderOver"
     end
 
