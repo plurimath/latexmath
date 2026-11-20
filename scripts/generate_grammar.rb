@@ -439,7 +439,7 @@ class Generator
     @data = JSON.parse(data_bytes)
     abort "unsupported data format #{@data['format']}" unless @data["format"] == FORMAT
     @markers = @data["markers"].map { |m| m["name"] }
-    @rules, @normalizer = Shapes.normalize(@data["rules"].to_h, @markers)
+    @rules, @normalizer = Shapes.normalize(with_boxed(@data["rules"].to_h), @markers)
     @specialised = specialised_rules.to_h { |n| [n, true] }
     @plurimath_specialised = @specialised.keys
     @defined = {}
@@ -465,6 +465,21 @@ class Generator
   end
 
   private
+
+  # Add stage-owned syntax without rewriting the exported legacy oracle.
+  # The existing unary node records both the command and its argument;
+  # consumers interpret unary "boxed" as a box enclosure. Require braces
+  # so a command prefix or a following expression cannot become its body.
+  def with_boxed(rules)
+    boxed = ["as", "unary_functions", ["seq",
+      ["ref", "slash"], ["as", "unary", ["str", "boxed"]],
+      ["as", "first_value", ["seq", ["str", "{"],
+        ["as", "expression", ["rep", 0, 1, "maybe", ["ref", "expression"]]],
+        ["str", "}"]]]]]
+    rules.merge("binary_functions" => rules.fetch("binary_functions").transform_values do |expr|
+      ["alt", boxed, *expr.drop(1)]
+    end)
+  end
 
   def tree_rule(marker) = "#{TREE_CAPTURE}__#{marker}"
 
@@ -714,6 +729,8 @@ class Generator
       # Plurimath::Latex::Parse#parse(text), where text is
       # Plurimath::Latex::Parser.new(input).text (see docs/parser-contract.adoc).
       # No model and no transform.
+      # Stage extension: \\boxed{...} retains unary "boxed" and its body
+      # as unary_functions, the typed equivalent of a box enclosure.
       #
       # Transcription: every Parsanol Entity (rule) is one rule here, under its
       # Plurimath name; every other atom is written inline, mechanically:

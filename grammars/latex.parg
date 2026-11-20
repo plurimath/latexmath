@@ -16,6 +16,8 @@
 # Plurimath::Latex::Parse#parse(text), where text is
 # Plurimath::Latex::Parser.new(input).text (see docs/parser-contract.adoc).
 # No model and no transform.
+# Stage extension: \boxed{...} retains unary "boxed" and its body
+# as unary_functions, the typed equivalent of a box enclosure.
 #
 # Transcription: every Parsanol Entity (rule) is one rule here, under its
 # Plurimath name; every other atom is written inline, mechanically:
@@ -5070,21 +5072,24 @@ grammar Latex version "0.1.0" {
   }
   slash = "\\"
   binary_functions__dot = {
-      ((intermediate_exp__dot) as first_value under_over (intermediate_exp__dot) as second_value) as under_over
+      (slash ("boxed") as unary ("{" (expression__dot / "" as absent) as expression "}") as first_value) as unary_functions
+    / ((intermediate_exp__dot) as first_value under_over (intermediate_exp__dot) as second_value) as under_over
     / (slash ("sqrt") as root (sqrt_arg__dot) as first_value (intermediate_exp__dot) as second_value) as binary
     / (slash ("sqrt") as sqrt (intermediate_exp__dot) as intermediate_exp) as binary
     / "{" slash (("color") as literal) as binary (color) as first_value [(sequence__dot [iteration__dot]) as second_value] "}"
     / slash (("color") as literal) as binary (color) as first_value [(expression__dot) as second_value]
   }
   binary_functions__comma = {
-      ((intermediate_exp__comma) as first_value under_over (intermediate_exp__comma) as second_value) as under_over
+      (slash ("boxed") as unary ("{" (expression__comma / "" as absent) as expression "}") as first_value) as unary_functions
+    / ((intermediate_exp__comma) as first_value under_over (intermediate_exp__comma) as second_value) as under_over
     / (slash ("sqrt") as root (sqrt_arg__comma) as first_value (intermediate_exp__comma) as second_value) as binary
     / (slash ("sqrt") as sqrt (intermediate_exp__comma) as intermediate_exp) as binary
     / "{" slash (("color") as literal) as binary (color) as first_value [(sequence__comma [iteration__comma]) as second_value] "}"
     / slash (("color") as literal) as binary (color) as first_value [(expression__comma) as second_value]
   }
   binary_functions__arabic = {
-      ((intermediate_exp__arabic) as first_value under_over (intermediate_exp__arabic) as second_value) as under_over
+      (slash ("boxed") as unary ("{" (expression__arabic / "" as absent) as expression "}") as first_value) as unary_functions
+    / ((intermediate_exp__arabic) as first_value under_over (intermediate_exp__arabic) as second_value) as under_over
     / (slash ("sqrt") as root (sqrt_arg__arabic) as first_value (intermediate_exp__arabic) as second_value) as binary
     / (slash ("sqrt") as sqrt (intermediate_exp__arabic) as intermediate_exp) as binary
     / "{" slash (("color") as literal) as binary (color) as first_value [(sequence__arabic [iteration__arabic]) as second_value] "}"

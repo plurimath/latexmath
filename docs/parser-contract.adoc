@@ -39,6 +39,21 @@ The raw-tree boundary already exists in this gem:
 
 `Latexmath::ParseError` carries the offsets described under <<Errors>>.
 
+=== Box enclosures
+
+The stage also accepts `\boxed{...}`, an extension to the pinned legacy
+grammar. The braces are required; their contents may be empty or contain
+nested commands, including another box. The chosen decimal marker applies
+inside the box. A command prefix such as `\boxedx` and unbraced box
+arguments are refused.
+
+The typed model uses the existing `UnaryFunctions` node with `unary` equal
+to `"boxed"` and the grouped contents in `first_value`. This represents an
+enclosure with MathML notation `box`; a consumer must map it to its enclosure
+model rather than discard the command. This syntax extension is applied by
+the generator before shape normalization. The pinned oracle export and
+shared corpus generations are unchanged.
+
 == Reference implementation
 
 The behaviour to reproduce is the LaTeX path of Plurimath at one fixed commit.
