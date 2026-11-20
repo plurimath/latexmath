@@ -476,9 +476,23 @@ class Generator
       ["as", "first_value", ["seq", ["str", "{"],
         ["as", "expression", ["rep", 0, 1, "maybe", ["ref", "expression"]]],
         ["str", "}"]]]]]
-    rules.merge("binary_functions" => rules.fetch("binary_functions").transform_values do |expr|
-      ["alt", boxed, *expr.drop(1)]
-    end)
+    # The legacy binary-function script operand is a whole sequence. For
+    # boxes, consume each script as one argument before that alternative
+    # can absorb the other script into it. Reuse the existing PowerBase
+    # node, keeping scripts inside braces within their own argument.
+    subscript = [["ref", "base"], ["as", "subscript", ["ref", "intermediate_exp"]]]
+    supscript = [["ref", "power"], ["as", "supscript", ["ref", "intermediate_exp"]]]
+    scripts = [subscript + supscript, supscript + subscript].map do |parts|
+      ["as", "power_base", ["seq", boxed, *parts]]
+    end
+    rules.merge(
+      "binary_functions" => rules.fetch("binary_functions").transform_values do |expr|
+        ["alt", boxed, *expr.drop(1)]
+      end,
+      "sequence" => rules.fetch("sequence").transform_values do |expr|
+        ["alt", *scripts, *expr.drop(1)]
+      end,
+    )
   end
 
   def tree_rule(marker) = "#{TREE_CAPTURE}__#{marker}"

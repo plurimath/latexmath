@@ -88,7 +88,9 @@ grammar Latex version "0.1.0" {
   sequence__comma = sequence_part1__comma / sequence_part2__comma
   sequence__arabic = sequence_part1__arabic / sequence_part2__arabic
   sequence_part1__dot = {
-      (limits__dot) as limits
+      ((slash ("boxed") as unary ("{" (expression__dot / "" as absent) as expression "}") as first_value) as unary_functions base (intermediate_exp__dot) as subscript power (intermediate_exp__dot) as supscript) as power_base
+    / ((slash ("boxed") as unary ("{" (expression__dot / "" as absent) as expression "}") as first_value) as unary_functions power (intermediate_exp__dot) as supscript base (intermediate_exp__dot) as subscript) as power_base
+    / (limits__dot) as limits
     / ((binary_functions__dot) as binary_functions power (sequence__dot) as supscript) as power
     / ((binary_functions__dot) as binary_functions base (sequence__dot) as subscript) as base
     / binary_functions__dot
@@ -102,11 +104,11 @@ grammar Latex version "0.1.0" {
     / slash ("substack") as substack intermediate_exp__dot
     / (array_begin array_args__dot (expression__dot) as table_data ending__dot) as environment
     / (begining__dot (expression__dot) as table_data ending__dot) as environment
-    / (slash environment intermediate_exp__dot) as table_data
-    / power_base__dot
   }
   sequence_part1__comma = {
-      (limits__comma) as limits
+      ((slash ("boxed") as unary ("{" (expression__comma / "" as absent) as expression "}") as first_value) as unary_functions base (intermediate_exp__comma) as subscript power (intermediate_exp__comma) as supscript) as power_base
+    / ((slash ("boxed") as unary ("{" (expression__comma / "" as absent) as expression "}") as first_value) as unary_functions power (intermediate_exp__comma) as supscript base (intermediate_exp__comma) as subscript) as power_base
+    / (limits__comma) as limits
     / ((binary_functions__comma) as binary_functions power (sequence__comma) as supscript) as power
     / ((binary_functions__comma) as binary_functions base (sequence__comma) as subscript) as base
     / binary_functions__comma
@@ -120,11 +122,11 @@ grammar Latex version "0.1.0" {
     / slash ("substack") as substack intermediate_exp__comma
     / (array_begin array_args__comma (expression__comma) as table_data ending__comma) as environment
     / (begining__comma (expression__comma) as table_data ending__comma) as environment
-    / (slash environment intermediate_exp__comma) as table_data
-    / power_base__comma
   }
   sequence_part1__arabic = {
-      (limits__arabic) as limits
+      ((slash ("boxed") as unary ("{" (expression__arabic / "" as absent) as expression "}") as first_value) as unary_functions base (intermediate_exp__arabic) as subscript power (intermediate_exp__arabic) as supscript) as power_base
+    / ((slash ("boxed") as unary ("{" (expression__arabic / "" as absent) as expression "}") as first_value) as unary_functions power (intermediate_exp__arabic) as supscript base (intermediate_exp__arabic) as subscript) as power_base
+    / (limits__arabic) as limits
     / ((binary_functions__arabic) as binary_functions power (sequence__arabic) as supscript) as power
     / ((binary_functions__arabic) as binary_functions base (sequence__arabic) as subscript) as base
     / binary_functions__arabic
@@ -138,12 +140,25 @@ grammar Latex version "0.1.0" {
     / slash ("substack") as substack intermediate_exp__arabic
     / (array_begin array_args__arabic (expression__arabic) as table_data ending__arabic) as environment
     / (begining__arabic (expression__arabic) as table_data ending__arabic) as environment
-    / (slash environment intermediate_exp__arabic) as table_data
-    / power_base__arabic
   }
-  sequence_part2__dot = intermediate_exp__dot / (intermediate_exp__dot) as intermediate_exp (rparen) as symbol
-  sequence_part2__comma = intermediate_exp__comma / (intermediate_exp__comma) as intermediate_exp (rparen) as symbol
-  sequence_part2__arabic = intermediate_exp__arabic / (intermediate_exp__arabic) as intermediate_exp (rparen) as symbol
+  sequence_part2__dot = {
+      (slash environment intermediate_exp__dot) as table_data
+    / power_base__dot
+    / intermediate_exp__dot
+    / (intermediate_exp__dot) as intermediate_exp (rparen) as symbol
+  }
+  sequence_part2__comma = {
+      (slash environment intermediate_exp__comma) as table_data
+    / power_base__comma
+    / intermediate_exp__comma
+    / (intermediate_exp__comma) as intermediate_exp (rparen) as symbol
+  }
+  sequence_part2__arabic = {
+      (slash environment intermediate_exp__arabic) as table_data
+    / power_base__arabic
+    / intermediate_exp__arabic
+    / (intermediate_exp__arabic) as intermediate_exp (rparen) as symbol
+  }
   limits__dot = {
       math_operators__dot base (intermediate_exp__dot) as base power (intermediate_exp__dot) as power
     / math_operators__dot power (intermediate_exp__dot) as power base (intermediate_exp__dot) as base

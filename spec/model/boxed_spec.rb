@@ -31,6 +31,22 @@ RSpec.describe "boxed expressions" do
         end
       end
 
+      it "keeps both script orders on the boxed base" do
+        [".", ",", "٫"].each do |decimal|
+          ["\\boxed{x}_{i}^{2}", "\\boxed{x}^{2}_{i}"].each do |input|
+            result = Latexmath::RawParser.parse(input, engine: engine, decimal: decimal)
+            expect_model(result, input, decimal, engine)
+            scripts = Latexmath.parse(input, engine: engine, decimal: decimal).expression.power_base
+            expect(scripts).to be_a(Latexmath::Model::PowerBase)
+            expect(scripts.unary_functions.unary).to eq("boxed")
+            expect(plain(model_data(scripts.subscript)))
+              .to eq(plain(model_data(Latexmath.parse("{i}", engine: engine).expression)))
+            expect(plain(model_data(scripts.supscript)))
+              .to eq(plain(model_data(Latexmath.parse("{2}", engine: engine).expression)))
+          end
+        end
+      end
+
       it "uses the caller's decimal marker inside the box" do
         [".", ",", "٫"].each do |decimal|
           input = "\\boxed{1#{decimal}5}"
