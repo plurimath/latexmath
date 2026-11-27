@@ -24,7 +24,7 @@ defaults:
 # The testsuite commit is a literal here (not read from a step output) so the
 # checkout ref is fixed by this file; a step checks it against the pin.
 env:
-  TESTSUITE_COMMIT: 337262eda0483ceaa43a02cc52362c5b721e5eb3
+  TESTSUITE_COMMIT: bcd1a578adcb7230639f6c366d034d85f933c7b2
   PIN: spec/fixtures/testsuite-pin.yml
 
 jobs:
