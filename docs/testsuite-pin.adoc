@@ -11,10 +11,10 @@ named in `spec/fixtures/testsuite-pin.yml`:
 ----
 schema: plurimath-stage/pin/1
 repository: https://github.com/plurimath/plurimath-testsuite
-commit: 337262eda0483ceaa43a02cc52362c5b721e5eb3
+commit: bcd1a578adcb7230639f6c366d034d85f933c7b2
 language: latex
-generation: 3
-snapshot_digest: sha256:782cb6ee7c75ec1e38ed343301c2220ad14c283b96e5cf9eac2a4ff39b1aeceb
+generation: 4
+snapshot_digest: sha256:a657a0c61602ffdc9c02f3533f8671f92e38c42ee679d50ded38efd0e69ae0ce
 ----
 
 Generation 2 keeps every case of generation 1 (the legacy corpus, produced by
@@ -32,6 +32,15 @@ leaves a derived attribute out of the comparison when the row's object does
 not record it, and lists those rows in its report
 (`unrecorded_derived_rows`). A derived attribute that a row does record must
 match, like every other field.
+
+Generation 4 keeps every payload of generation 3 byte for byte and adds 108
+revision-2 typed-model rows (`<id>-r2`) written by `scripts/stage_cases.rb`
+at the merged head of this gem's PR 68. Each supersedes the typed-model row of
+the same id: `Latexmath::Model::MathSymbol` now records its derived `value`
+and `kind` beside `spelling`. The replay compares the revision-2 rows in full
+and still compares the 108 superseded rows without the unrecorded derived
+attributes. All 139 raw-tree rows and all 247 typed-model rows match on the
+Ruby and the native engine.
 
 == What CI checks
 
@@ -61,7 +70,7 @@ To run the replay locally:
 [source,sh]
 ----
 git clone https://github.com/plurimath/plurimath-testsuite tmp/testsuite
-git -C tmp/testsuite checkout 337262eda0483ceaa43a02cc52362c5b721e5eb3
+git -C tmp/testsuite checkout bcd1a578adcb7230639f6c366d034d85f933c7b2
 bundle exec ruby scripts/replay_corpus.rb --testsuite tmp/testsuite --report tmp/replay.json
 ----
 

@@ -36,7 +36,7 @@ env:
   # spec/fixtures/testsuite-pin.yml (a step checks it). The payloads are
   # generated from its generation 1, which every later generation keeps
   # byte for byte.
-  TESTSUITE_COMMIT: 337262eda0483ceaa43a02cc52362c5b721e5eb3
+  TESTSUITE_COMMIT: bcd1a578adcb7230639f6c366d034d85f933c7b2
   SOURCE_GENERATION: "1"
   SOURCE_DIGEST: sha256:9b362ce57706c5ca154bfc295b2037b9e626775d8a82a4557f3702c9ad2c74ba
   # Parsanol ships a precompiled native extension for x86_64 Linux; fail

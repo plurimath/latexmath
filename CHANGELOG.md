@@ -26,6 +26,9 @@
   derived attribute that a row does not record, such as `MathSymbol#value`
   and `#kind` in the generation 3 rows, is left out of the comparison and
   listed in the report.
+- The testsuite pin moves to latex generation 4, which adds revision-2
+  typed-model rows that record `MathSymbol#value` and `#kind`. All raw-tree
+  and typed-model rows match on both engines.
 
 ### Fixed
 
